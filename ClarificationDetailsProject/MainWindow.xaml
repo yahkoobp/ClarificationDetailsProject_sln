@@ -1,0 +1,36 @@
+﻿<Window x:Class="ClarificationDetailsProject.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClarificationDetailsProject"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <StackPanel>
+            <Button Content="Load Excel" Command="{Binding LoadExcelCommand}" />
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Filter by Status:" />
+                <ComboBox Width="100" SelectedItem="{Binding FilterStatus}">
+                    <ComboBoxItem Content="Open" />
+                    <ComboBoxItem Content="Closed" />
+                    <ComboBoxItem Content="Pending" />
+                </ComboBox>
+            </StackPanel>
+
+            <TextBox Width="200" Text="{Binding Clarifications[0].DocumentName , UpdateSourceTrigger=PropertyChanged , Mode=TwoWay}" />
+
+            <DataGrid ItemsSource="{Binding Clarifications}" AutoGenerateColumns="False" >
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Document Name" Binding="{Binding DocumentName }" />
+                    <DataGridTextColumn Header="Module" Binding="{Binding Module}" />
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=yyyy-MM-dd}" />
+                    <DataGridTextColumn Header="Question" Binding="{Binding Question}" />
+                    <DataGridTextColumn Header="Answer" Binding="{Binding Answer}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </Grid>
+</Window>
