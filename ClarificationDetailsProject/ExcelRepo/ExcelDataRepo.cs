@@ -55,7 +55,6 @@ namespace ClarificationDetailsProject.ExcelRepo
         {
             throw new NotImplementedException();
         }
-       
         public bool IsValidExcelWorkBook(Excel.Worksheet worksheet)
         {
             try
