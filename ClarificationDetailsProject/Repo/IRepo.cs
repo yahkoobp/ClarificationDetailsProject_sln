@@ -25,6 +25,8 @@ namespace ClarificationDetailsProject.Repo
         /// <param name="text"></param>
         void Search(string text);
 
+        ObservableCollection<Models.Module> GetModules();
+
 
     }
 }

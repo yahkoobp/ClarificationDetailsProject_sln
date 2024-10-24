@@ -69,6 +69,7 @@
     <Compile Include="ExcelRepo\ExcelDataRepo.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Models\Clarification.cs" />
+    <Compile Include="Models\Module.cs" />
     <Compile Include="Repo\IRepo.cs" />
     <Compile Include="ViewModels\ClarificationViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />

@@ -36,6 +36,7 @@ namespace ClarificationDetailsProject.ExcelRepo
     public class ExcelDataRepo : IRepo
     {
         ObservableCollection<Clarification> Clarifications = new ObservableCollection<Clarification>();
+        ObservableCollection<Models.Module> Modules = new ObservableCollection<Models.Module>();
         private List<string> expectedHeaders = new List<string>() 
         {
             "No", 
@@ -123,17 +124,24 @@ namespace ClarificationDetailsProject.ExcelRepo
                 // Loop through each worksheet in the workbook
                 foreach (Excel.Worksheet worksheet in workbook.Worksheets)
                 {
+                    //Check if worksheet contains any data
+                    Excel.Range usedRange = worksheet.UsedRange;
+                    string name = worksheet.Name;
+                    int count = usedRange.Rows.Count;
+                    if(usedRange == null || count == 0)
+                    {
+                        throw new InvalidOperationException($"The worksheet '{worksheet.Name}' does not contain any data.");
+                    }
+                    int rowCount = usedRange.Rows.Count;
                     // Validate the worksheet headers
                     if (IsValidExcelWorkBook(worksheet))
                     {
-                        Excel.Range usedRange = worksheet.UsedRange;
-                        if (usedRange == null || usedRange.Rows.Count == 0)
+                        //Add valid sheet names to modules list
+                        Modules.Add(new Models.Module()
                         {
-                            throw new InvalidOperationException($"The worksheet '{worksheet.Name}' does not contain any data.");
-                        }
-
-                        int rowCount = usedRange.Rows.Count;
-
+                            Name = worksheet.Name,
+                            IsChecked = false,
+                        });
                         // Loop through the rows starting from row 3
                         for (int row = 3; row <= rowCount; row++)
                         {
@@ -164,9 +172,9 @@ namespace ClarificationDetailsProject.ExcelRepo
                                         statusCell.Value2.ToString() : string.Empty,
                                 });
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
-                                Console.WriteLine($"Error processing row {row} in worksheet '{worksheet.Name}': {ex.Message}");
+                                throw new InvalidOperationException($"Error processing row {row} in worksheet '{worksheet.Name}'");
                             }
                         }
                     }
@@ -199,6 +207,10 @@ namespace ClarificationDetailsProject.ExcelRepo
             return clarifications;
         }
 
+        public ObservableCollection<Models.Module> GetModules()
+        {
+            return Modules;
+        }
         public void Search(string text)
         {
             throw new NotImplementedException();

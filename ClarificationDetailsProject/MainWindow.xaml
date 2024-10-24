@@ -6,31 +6,55 @@
         xmlns:local="clr-namespace:ClarificationDetailsProject"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <StackPanel>
-            <Button Content="Load Excel" Command="{Binding LoadExcelCommand}" />
+    <Grid MaxWidth="600" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Filter by Status:" />
-                <ComboBox Width="100" SelectedItem="{Binding FilterStatus}">
-                    <ComboBoxItem Content="Open" />
-                    <ComboBoxItem Content="Closed" />
-                    <ComboBoxItem Content="Pending" />
-                </ComboBox>
+        <Border Grid.Row="0" BorderBrush="gray" BorderThickness="1">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <TextBlock Text="FilePath: " VerticalAlignment="Center" Width="60"/>
+                    <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4"/>
+                    <Button Content="..." Width="50" Margin="10 0 0 0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <TextBlock Text="FileName: " VerticalAlignment="Center" Width="60"/>
+                    <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4"/>
+                    <Button Content="Show Details" Width="100" Margin="10 0 0 0" Command="{Binding LoadExcelCommand}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"></StackPanel>
             </StackPanel>
+        </Border>
 
-            <TextBox Width="200" Text="{Binding Clarifications[0].DocumentName , UpdateSourceTrigger=PropertyChanged , Mode=TwoWay}" />
+        <Border Grid.Row="1" BorderBrush="gray" BorderThickness="1" Margin="0 10 0 0">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Filter Conditons" Margin="10 10 0 0" FontWeight="Bold"/>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <TextBlock Text="Modules: " VerticalAlignment="Center" Width="60"/>
+                    <WrapPanel Orientation="Horizontal" Width="300">
+                        <ListBox ItemsSource="{Binding Modules}"  Margin="10 0 0 0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" 
+                                    IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </WrapPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <TextBlock Text="FileName: " VerticalAlignment="Center" Width="60"/>
+                    <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4"/>
+                    <Button Content="Show Details" Width="100" Margin="10 0 0 0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"></StackPanel>
+            </StackPanel>
+        </Border>
 
-            <DataGrid ItemsSource="{Binding Clarifications}" AutoGenerateColumns="False" >
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Document Name" Binding="{Binding DocumentName }" />
-                    <DataGridTextColumn Header="Module" Binding="{Binding Module}" />
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
-                    <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=yyyy-MM-dd}" />
-                    <DataGridTextColumn Header="Question" Binding="{Binding Question}" />
-                    <DataGridTextColumn Header="Answer" Binding="{Binding Answer}" />
-                </DataGrid.Columns>
-            </DataGrid>
-        </StackPanel>
+
     </Grid>
 </Window>

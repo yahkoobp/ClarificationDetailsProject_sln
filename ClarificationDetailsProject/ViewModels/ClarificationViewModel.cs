@@ -21,6 +21,7 @@ using ClarificationDetailsProject.Models;
 using System.Windows.Input;
 using ClarificationDetailsProject.Repo;
 using ClarificationDetailsProject.ExcelRepo;
+using System.Windows;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -36,6 +37,7 @@ namespace ClarificationDetailsProject.ViewModels
     {
         private IRepo _repo = new ExcelDataRepo();
         private ObservableCollection<Clarification> _clarifications;
+        private ObservableCollection<Models.Module> _modules;
         private Clarification _selectedClarification;
         private string _filterStatus;
         private string _searchText;
@@ -49,6 +51,35 @@ namespace ClarificationDetailsProject.ViewModels
                 OnPropertyChanged(nameof(Clarifications));
             }
         }
+
+        public ObservableCollection<Models.Module> Modules
+        {
+            get { return _modules; }
+            set
+            {
+                _modules = value;
+                OnPropertyChanged(nameof(Modules));
+            }
+        }
+
+        private bool _isAllChecked;
+
+        public bool IsAllChecked
+        {
+            get => _isAllChecked;
+            set
+            {
+                _isAllChecked = value;
+                OnPropertyChanged(nameof(IsAllChecked));
+
+                foreach (var item in Modules)
+                {
+                    item.IsChecked = value;
+                }
+            }
+        }
+
+
 
         public string FilterStatus
         {
@@ -69,6 +100,7 @@ namespace ClarificationDetailsProject.ViewModels
         {
             LoadExcelCommand = new RelayCommand(LoadExcel);
             Clarifications = new ObservableCollection<Clarification>();
+            Modules = new ObservableCollection<Models.Module>();
         }
 
         private void LoadExcel()
@@ -79,13 +111,32 @@ namespace ClarificationDetailsProject.ViewModels
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                var data = _repo.LoadData(filePath);
-                Clarifications.Clear();
-
-                foreach (var item in data)
+                try
                 {
-                    Clarifications.Add(item);
+                    var data = _repo.LoadData(filePath);
+                    Clarifications.Clear();
+
+                    foreach (var item in data)
+                    {
+                        Clarifications.Add(item);
+                    }
+
+                    var modules = _repo.GetModules();
+                    Modules.Clear();
+                    foreach(var item in modules)
+                    {
+                        Modules.Add(item);
+                    }
                 }
+                catch(InvalidOperationException ex)
+                {
+                    MessageBox.Show($"{ex.Message}");
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}");
+                }         
+                
             }
         }
 
