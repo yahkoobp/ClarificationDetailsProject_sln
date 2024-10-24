@@ -66,6 +66,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="CustomControls\DetailsGridControl.xaml.cs">
+      <DependentUpon>DetailsGridControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CustomControls\SummaryGridControl.xaml.cs">
+      <DependentUpon>SummaryGridControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ExcelRepo\ExcelDataRepo.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Models\Clarification.cs" />
@@ -73,6 +79,14 @@
     <Compile Include="Repo\IRepo.cs" />
     <Compile Include="ViewModels\ClarificationViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Page Include="CustomControls\DetailsGridControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CustomControls\SummaryGridControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -99,7 +99,11 @@ namespace ClarificationDetailsProject.ViewModels
         public ClarificationViewModel()
         {
             LoadExcelCommand = new RelayCommand(LoadExcel);
-            Clarifications = new ObservableCollection<Clarification>();
+            Clarifications = new ObservableCollection<Clarification>()
+            {
+                 new Clarification { Number = 1, Date = DateTime.Now, DocumentName = "Doc1", Question = "Question1", Answer = "Answer1", Status = "Pending" },
+            new Clarification{ Number = 2, Date = DateTime.Now, DocumentName = "Doc2", Question = "Question2", Answer = "Answer2", Status = "Closed" }
+            };
             Modules = new ObservableCollection<Models.Module>();
         }
 
