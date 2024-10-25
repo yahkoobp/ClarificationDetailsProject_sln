@@ -34,22 +34,6 @@ namespace ClarificationDetailsProject.CustomControls
             get { return (ObservableCollection<Clarification>)GetValue(ItemsProperty); }
             set { SetValue(ItemsProperty, value); }
         }
-
-        public static readonly DependencyProperty StatusProperty =
-          DependencyProperty.Register("Status", typeof(IEnumerable), typeof(DetailsGridControl), new PropertyMetadata(null , OnItemsChanged));
-        public IEnumerable Status
-        {
-            get { return (IEnumerable)GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
-        }
-
-        private static void OnItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var control = d as DetailsGridControl;
-            if (control != null)
-            {
-                // If needed, you can handle additional logic here when Items changes
-            }
-        }
+      
     }
 }

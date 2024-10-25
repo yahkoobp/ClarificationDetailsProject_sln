@@ -7,12 +7,12 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <DataGrid ItemsSource="{Binding Items, ElementName=SummaryGridControl}" 
+        <DataGrid ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=UserControl}}" 
           AutoGenerateColumns="False" 
           IsReadOnly="True">
             <DataGrid.Resources>
                 <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="Gray"/>
+                    <Setter Property="Background" Value="Teal"/>
                     <Setter Property="Foreground" Value="White"/>
                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
                     <Setter Property="FontWeight" Value="Bold"/>
@@ -21,32 +21,19 @@
             </DataGrid.Resources>
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <!-- Default background -->
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Status}" Value="Pending">
-                            <Setter Property="Background" Value="LightBlue"/>
-                            <!-- Background for Pending status -->
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Status}" Value="Closed">
-                            <Setter Property="Background" Value="LightYellow"/>
-                            <!-- Background for Closed status -->
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Status}" Value="In Progress">
-                            <Setter Property="Background" Value="LightGreen"/>
-                            <!-- Background for In Progress status -->
-                        </DataTrigger>
-                        <!-- Add more conditions as needed -->
-                    </Style.Triggers>
+                    <Setter Property="Background" Value="AliceBlue"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    <Setter Property="Height" Value="30"/>
                 </Style>
             </DataGrid.RowStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="No" Binding="{Binding No}" Width="50"/>
-                <DataGridTextColumn Header="Module Name" Binding="{Binding Date}"  Width="200"/>
-                <DataGridTextColumn Header="Closed" Binding="{Binding Value}" Width="*" />
-                <DataGridTextColumn Header="Open" Binding="{Binding Value}" Width="*"/>
-                <DataGridTextColumn Header="On Hold" Binding="{Binding Value}" Width="*" />
-                <DataGridTextColumn Header="Total" Binding="{Binding Value}" Width="*"/>
+                <DataGridTextColumn Header="Module Name" Binding="{Binding Module}"  Width="200"/>
+                <DataGridTextColumn Header="Closed" Binding="{Binding Closed}" Width="*" />
+                <DataGridTextColumn Header="Open" Binding="{Binding Open}" Width="*"/>
+                <DataGridTextColumn Header="Pending" Binding="{Binding Pending}" Width="*"/>
+                <DataGridTextColumn Header="On Hold" Binding="{Binding OnHold}" Width="*" />
+                <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

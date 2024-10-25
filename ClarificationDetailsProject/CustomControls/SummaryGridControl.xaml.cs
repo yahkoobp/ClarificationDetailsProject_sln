@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ClarificationDetailsProject.Models;
 
 namespace ClarificationDetailsProject.CustomControls
 {
@@ -26,18 +28,10 @@ namespace ClarificationDetailsProject.CustomControls
             InitializeComponent();
         }
         public static readonly DependencyProperty ItemsProperty =
-           DependencyProperty.Register("Items", typeof(IEnumerable), typeof(SummaryGridControl), new PropertyMetadata(null));
-        public IEnumerable Items
+           DependencyProperty.Register("Items", typeof(ObservableCollection<Summary>), typeof(SummaryGridControl), new PropertyMetadata(null));
+        public ObservableCollection<Summary> Items
         {
-            get { return (IEnumerable)GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
-        }
-
-        public static readonly DependencyProperty StatusProperty =
-           DependencyProperty.Register("Status", typeof(IEnumerable), typeof(SummaryGridControl), new PropertyMetadata(null));
-        public IEnumerable Status
-        {
-            get { return (IEnumerable)GetValue(ItemsProperty); }
+            get { return (ObservableCollection<Summary>)GetValue(ItemsProperty); }
             set { SetValue(ItemsProperty, value); }
         }
     }

@@ -9,7 +9,7 @@
     <Grid>
         <DataGrid ItemsSource="{Binding Items,RelativeSource={RelativeSource AncestorType=UserControl}}" 
                   AutoGenerateColumns="False" 
-                  IsReadOnly="True">
+                  IsReadOnly="True" Height="300">
             <DataGrid.Resources>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Background" Value="Teal"/>
@@ -57,9 +57,9 @@
             </DataGrid.CellStyle>
 
             <DataGrid.Columns>
-                <DataGridTextColumn Header="No" Binding="{Binding Number}" Width="40"/>
-                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="60"/>
-                <DataGridTextColumn Header="Doc Name" Binding="{Binding DocumentName}" Width="100" />
+                <DataGridTextColumn Header="No" Binding="{Binding Number}" Width="80"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date,StringFormat='{}{0:MM/dd/yyyy}'}" Width="100"/>
+                <DataGridTextColumn Header="Doc Name" Binding="{Binding DocumentName}" Width="150" />
                 <DataGridTextColumn Header="Question" Binding="{Binding Question}" Width="*" />
                 <DataGridTextColumn Header="Answer" Binding="{Binding Answer}" Width="*" />
                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />

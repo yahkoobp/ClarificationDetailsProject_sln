@@ -25,6 +25,7 @@ using System.Windows;
 using System.IO;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 using System.Runtime.InteropServices.ComTypes;
+using Microsoft.Win32;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -52,6 +53,20 @@ namespace ClarificationDetailsProject.ViewModels
                 _clarifications = value;
                 OnPropertyChanged(nameof(Clarifications));
                
+            }
+        }
+
+        private ObservableCollection<Summary> summaries;
+        public ObservableCollection<Summary> Summaries
+        {
+            get
+            {
+                return summaries;
+            }
+            set
+            {
+                summaries = value;
+                OnPropertyChanged(nameof(Summaries));
             }
         }
         public ObservableCollection<Clarification> TempClarifications { get; set; }
@@ -148,6 +163,36 @@ namespace ClarificationDetailsProject.ViewModels
               
             }
         }
+
+        private DateTime filterFromDate;
+        public DateTime FilterFromDate
+        {
+            get
+            {
+                return filterFromDate;
+            }
+            set
+            {
+                filterFromDate = value;
+                OnPropertyChanged(nameof(FilterFromDate));
+
+            }
+        }
+
+        private DateTime filterToDate;
+        public DateTime FilterToDate
+        {
+            get
+            {
+                return filterToDate;
+            }
+            set
+            {
+                filterToDate = value;
+                OnPropertyChanged(nameof(FilterToDate));
+
+            }
+        }
         public string SearchText
         {
             get { return _searchText; }
@@ -161,6 +206,7 @@ namespace ClarificationDetailsProject.ViewModels
         public ICommand ApplyFilterCommand { get; }
 
         public ICommand ResetFilterCommand { get; }
+        public ICommand ExportClarificationsToExcelCommand { get; }
 
         public ClarificationViewModel()
         {
@@ -168,12 +214,16 @@ namespace ClarificationDetailsProject.ViewModels
             ShowDialogCommand = new RelayCommand(ShowDialog);
             ApplyFilterCommand = new RelayCommand(ApplyFilters);
             ResetFilterCommand = new RelayCommand(ResetFilter);
+            ExportClarificationsToExcelCommand = new RelayCommand(ExportClarificationToExcel);
+
             this.FilePath = string.Empty;
             Clarifications = new ObservableCollection<Clarification>()
             {
                  new Clarification { Number = 1, Date = DateTime.Now, DocumentName = "Doc1", Question = "Question1", Answer = "Answer1", Status = "Pending" },
             new Clarification{ Number = 2, Date = DateTime.Now, DocumentName = "Doc2", Question = "Question2", Answer = "Answer2", Status = "Closed" }
             };
+
+            Summaries = new ObservableCollection<Summary>();
             filteredClarifications = new ObservableCollection<Clarification>();
             TempClarifications = new ObservableCollection<Clarification>();
             Modules = new ObservableCollection<Models.Module>();
@@ -203,6 +253,12 @@ namespace ClarificationDetailsProject.ViewModels
                 {
                     Clarifications.Add(item);
                     TempClarifications.Add(item);
+                }
+                var summaries = _repo.GetSummaries();
+                this.Summaries.Clear();
+                foreach(var summary in summaries)
+                {
+                    this.Summaries.Add(summary);
                 }
                 var modules = _repo.GetModules();
                 Modules.Clear();
@@ -239,9 +295,11 @@ namespace ClarificationDetailsProject.ViewModels
 
             foreach (var clarification in TempClarifications)
             {
-                bool matchesStatus = string.IsNullOrEmpty(FilterStatus) || clarification.Status.Equals(FilterStatus, StringComparison.OrdinalIgnoreCase);
+                bool matchesStatus = string.IsNullOrEmpty(FilterStatus) || clarification.Status.Equals(FilterStatus, StringComparison.OrdinalIgnoreCase) || FilterStatus.CompareTo("All") == 0;
                 bool matchesModule = !selectedModules.Any() ||
                                      selectedModules.Contains(clarification.Module);
+                //bool matchesDate = (FilterFromDate == null || clarification.Date >= FilterFromDate) &&
+                //                   (FilterToDate == null || clarification.Date <= FilterToDate);
 
                 // If all conditions are met, add the clarification to the filtered list
                 if (matchesModule && matchesStatus)
@@ -260,13 +318,28 @@ namespace ClarificationDetailsProject.ViewModels
                 Clarifications.Add(clarification);
             }
         }
-
         public void ResetFilter()
         {
             Clarifications.Clear();
             foreach (var item in TempClarifications)
             {
                 Clarifications.Add(item);
+            }
+        }
+
+        public void ExportClarificationToExcel()
+        {
+            // Open a SaveFileDialog to specify the file path
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx",
+                Title = "Save Clarifications File",
+                FileName = "Clarifications.xlsx" // Default file name
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                _repo.ExportClarificationsToExcel(saveFileDialog.FileName);
             }
         }
     }

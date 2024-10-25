@@ -13,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -36,6 +38,7 @@ namespace ClarificationDetailsProject.ExcelRepo
     public class ExcelDataRepo : IRepo
     {
         ObservableCollection<Clarification> Clarifications = new ObservableCollection<Clarification>();
+       // ObservableCollection<Summary> Summaries = new ObservableCollection<Summary>();
         ObservableCollection<Models.Module> Modules = new ObservableCollection<Models.Module>();
         private List<string> expectedHeaders = new List<string>() 
         {
@@ -106,7 +109,7 @@ namespace ClarificationDetailsProject.ExcelRepo
 
         public ObservableCollection<Clarification> LoadData(string filePath)
         {
-            ObservableCollection<Clarification> clarifications = new ObservableCollection<Clarification>();
+            //ObservableCollection<Clarification> clarifications = new ObservableCollection<Clarification>();
             Excel.Application excelApp = new Excel.Application();
             Excel.Workbook workbook = null;
             Modules.Clear();
@@ -156,12 +159,12 @@ namespace ClarificationDetailsProject.ExcelRepo
                                 var statusCell = worksheet.Cells[row, 10] as Excel.Range;
 
                                 // Add the data to the collection
-                                clarifications.Add(new Clarification
+                                Clarifications.Add(new Clarification
                                 {
                                     Number = numberCell != null && numberCell.Value2 != null ?
                                         int.TryParse(numberCell.Value2.ToString(), out int number) ? number : 0 : 0,
                                     Date = dateCell != null && dateCell.Value2 != null ?
-                                        DateTime.TryParse(dateCell.Value2.ToString(), out DateTime date) ? date : DateTime.MinValue : DateTime.MinValue,
+                                        ConvertExcelDateToDateTime(dateCell.Value2) : DateTime.MinValue,
                                     DocumentName = documentNameCell != null && documentNameCell.Value2 != null ?
                                         documentNameCell.Value2.ToString() : string.Empty,
                                     Module = worksheet.Name,
@@ -205,7 +208,24 @@ namespace ClarificationDetailsProject.ExcelRepo
                 }
             }
 
-            return clarifications;
+            return Clarifications;
+        }
+
+        public ObservableCollection<Summary> GetSummaries()
+        {
+            var summaries = from clarification in Clarifications
+                    group clarification by clarification.Module into moduleGroup
+                    select new Summary
+                    {
+                        Module = moduleGroup.Key,
+                        Closed = moduleGroup.Count(c => c.Status == "Closed"),
+                        Open = moduleGroup.Count(c => c.Status == "Open"),
+                        OnHold = moduleGroup.Count(c => c.Status == "On Hold"),
+                        Pending = moduleGroup.Count(c => c.Status == "Pending"),
+                        Total = moduleGroup.Count()
+                    };
+
+            return new ObservableCollection<Summary>(summaries);
         }
 
         public ObservableCollection<Clarification> Filter(string status, DateTime? startDate, DateTime? endDate, List<string> selectedModuleNames)
@@ -240,5 +260,113 @@ namespace ClarificationDetailsProject.ExcelRepo
         {
             throw new NotImplementedException();
         }
+
+        private DateTime ConvertExcelDateToDateTime(object excelDate)
+        {
+            if (excelDate is double serialDate)
+            {
+                // Excel dates are based on the OLE Automation date
+                try
+                {
+                    DateTime dateTime = DateTime.FromOADate(serialDate);
+                    return dateTime.Date; // Return only the date part
+                }
+                catch
+                {
+                    return DateTime.MinValue; // Return a default value if conversion fails
+                }
+            }
+            return DateTime.MinValue; // Return a default value if the input is not a valid date
+        }
+
+        public void ExportClarificationsToExcel(string filename)
+        {
+            // Create Excel application
+            Excel.Application excelApp = new Excel.Application();
+            excelApp.Visible = false; // Set to true if you want to see the Excel window
+
+            // Create a new workbook
+            Excel.Workbook workbook = excelApp.Workbooks.Add();
+            Excel.Worksheet clarificationSheet = (Excel.Worksheet)workbook.Sheets[1];
+            clarificationSheet.Name = "Clarifications";
+
+            // Set headers
+            clarificationSheet.Cells[1, 1] = "Number";
+            clarificationSheet.Cells[1, 2] = "Date";
+            clarificationSheet.Cells[1, 3] = "Document Name";
+            clarificationSheet.Cells[1, 4] = "Module";
+            clarificationSheet.Cells[1, 5] = "Question";
+            clarificationSheet.Cells[1, 6] = "Answer";
+            clarificationSheet.Cells[1, 7] = "Status";
+
+            // Fill data
+            int row = 2;
+            foreach (var clarification in Clarifications)
+            {
+                clarificationSheet.Cells[row, 1] = clarification.Number;
+                clarificationSheet.Cells[row, 2] = clarification.Date.ToShortDateString();
+                clarificationSheet.Cells[row, 3] = clarification.DocumentName;
+                clarificationSheet.Cells[row, 4] = clarification.Module;
+                clarificationSheet.Cells[row, 5] = clarification.Question;
+                clarificationSheet.Cells[row, 6] = clarification.Answer;
+                clarificationSheet.Cells[row, 7] = clarification.Status;
+                row++;
+            }
+
+            // Save and close the workbook
+            workbook.SaveAs(filename);
+            workbook.Close();
+            excelApp.Quit();
+
+            // Cleanup
+            Marshal.ReleaseComObject(clarificationSheet);
+            Marshal.ReleaseComObject(workbook);
+            Marshal.ReleaseComObject(excelApp);
+        }
+
+        //public void ExportSummaryToExcel(ObservableCollection<Summary> summaries, string filename)
+        //{
+        //    // Create Excel application
+        //    Excel.Application excelApp = new Excel.Application();
+        //    excelApp.Visible = false; // Set to true if you want to see the Excel window
+
+        //    // Create a new workbook
+        //    Excel.Workbook workbook = excelApp.Workbooks.Add();
+        //    Excel.Worksheet summarySheet = (Excel.Worksheet)workbook.Sheets[1];
+        //    summarySheet.Name = "Summary";
+
+        //    // Set headers
+        //    summarySheet.Cells[1, 1] = "Module";
+        //    summarySheet.Cells[1, 2] = "Closed";
+        //    summarySheet.Cells[1, 3] = "Open";
+        //    summarySheet.Cells[1, 4] = "On Hold";
+        //    summarySheet.Cells[1, 5] = "Pending";
+        //    summarySheet.Cells[1, 6] = "Total";
+
+        //    // Fill data
+        //    int row = 2;
+        //    foreach (var summary in summaries)
+        //    {
+        //        summarySheet.Cells[row, 1] = summary.Module;
+        //        summarySheet.Cells[row, 2] = summary.Closed;
+        //        summarySheet.Cells[row, 3] = summary.Open;
+        //        summarySheet.Cells[row, 4] = summary.OnHold;
+        //        summarySheet.Cells[row, 5] = summary.Pending;
+        //        summarySheet.Cells[row, 6] = summary.Total;
+        //        row++;
+        //    }
+
+        //    // Save and close the workbook
+        //    workbook.SaveAs(filename);
+        //    workbook.Close();
+        //    excelApp.Quit();
+
+        //    // Cleanup
+        //    Marshal.ReleaseComObject(summarySheet);
+        //    Marshal.ReleaseComObject(workbook);
+        //    Marshal.ReleaseComObject(excelApp);
+        //}
     }
 }
+
+
