@@ -22,6 +22,9 @@ using System.Windows.Input;
 using ClarificationDetailsProject.Repo;
 using ClarificationDetailsProject.ExcelRepo;
 using System.Windows;
+using System.IO;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -39,7 +42,6 @@ namespace ClarificationDetailsProject.ViewModels
         private ObservableCollection<Clarification> _clarifications;
         private ObservableCollection<Models.Module> _modules;
         private Clarification _selectedClarification;
-        private string _filterStatus;
         private string _searchText;
 
         public ObservableCollection<Clarification> Clarifications
@@ -49,6 +51,47 @@ namespace ClarificationDetailsProject.ViewModels
             {
                 _clarifications = value;
                 OnPropertyChanged(nameof(Clarifications));
+               
+            }
+        }
+        public ObservableCollection<Clarification> TempClarifications { get; set; }
+
+        private ObservableCollection<Clarification> filteredClarifications;
+        public ObservableCollection<Clarification> FilteredClarifications
+        {
+            get { return filteredClarifications; ; }
+            set
+            {
+                filteredClarifications = value;
+                OnPropertyChanged(nameof(FilteredClarifications));
+            }
+        }
+
+        private string filePath;
+        public string FilePath
+        {
+            get
+            {
+                return filePath;
+            }
+            set
+            {
+                filePath = value;
+                OnPropertyChanged(nameof(FilePath));
+            }
+        }
+
+        private string fileName;
+        public string FileName
+        {
+            get
+            {
+                return fileName;
+            }
+            set
+            {
+                fileName = value;
+                OnPropertyChanged(nameof(FileName));
             }
         }
 
@@ -59,6 +102,18 @@ namespace ClarificationDetailsProject.ViewModels
             {
                 _modules = value;
                 OnPropertyChanged(nameof(Modules));
+            }
+        }
+
+
+        private List<string> selectedModules;
+        public List<string> SelectedModules
+        {
+            get { return selectedModules; }
+            set
+            {
+                selectedModules = value;
+                OnPropertyChanged(nameof(SelectedModules));
             }
         }
 
@@ -79,14 +134,20 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
-
-
+        private string _filterStatus;
         public string FilterStatus
         {
-            get { return _filterStatus; }
-            set { _filterStatus = value; OnPropertyChanged(nameof(FilterStatus)); ApplyFilters(); }
+            get
+            {
+                return _filterStatus;
+            }
+            set
+            {
+                _filterStatus = value;
+                OnPropertyChanged(nameof(FilterStatus));
+              
+            }
         }
-
         public string SearchText
         {
             get { return _searchText; }
@@ -95,64 +156,118 @@ namespace ClarificationDetailsProject.ViewModels
 
         // Command for loading Excel
         public ICommand LoadExcelCommand { get; }
+        public ICommand ShowDialogCommand { get; }
+
+        public ICommand ApplyFilterCommand { get; }
+
+        public ICommand ResetFilterCommand { get; }
 
         public ClarificationViewModel()
         {
             LoadExcelCommand = new RelayCommand(LoadExcel);
+            ShowDialogCommand = new RelayCommand(ShowDialog);
+            ApplyFilterCommand = new RelayCommand(ApplyFilters);
+            ResetFilterCommand = new RelayCommand(ResetFilter);
+            this.FilePath = string.Empty;
             Clarifications = new ObservableCollection<Clarification>()
             {
                  new Clarification { Number = 1, Date = DateTime.Now, DocumentName = "Doc1", Question = "Question1", Answer = "Answer1", Status = "Pending" },
             new Clarification{ Number = 2, Date = DateTime.Now, DocumentName = "Doc2", Question = "Question2", Answer = "Answer2", Status = "Closed" }
             };
+            filteredClarifications = new ObservableCollection<Clarification>();
+            TempClarifications = new ObservableCollection<Clarification>();
             Modules = new ObservableCollection<Models.Module>();
+            selectedModules = new List<string>();
         }
 
-        private void LoadExcel()
+        public void ShowDialog()
         {
             var dialog = new Microsoft.Win32.OpenFileDialog();
             dialog.Filter = "Excel Files (*.xlsx)|*.xlsx";
 
             if (dialog.ShowDialog() == true)
             {
-                string filePath = dialog.FileName;
-                try
+                this.FilePath = dialog.FileName;
+                this.FileName = Path.GetFileName(FilePath);
+            }
+        }
+        public void LoadExcel()
+        {
+            string filePath = this.FilePath;
+            try
+            {
+                var data = _repo.LoadData(filePath);
+                Clarifications.Clear();
+                TempClarifications.Clear();
+                foreach (var item in data)
                 {
-                    var data = _repo.LoadData(filePath);
-                    Clarifications.Clear();
-
-                    foreach (var item in data)
-                    {
-                        Clarifications.Add(item);
-                    }
-
-                    var modules = _repo.GetModules();
-                    Modules.Clear();
-                    foreach(var item in modules)
-                    {
-                        Modules.Add(item);
-                    }
+                    Clarifications.Add(item);
+                    TempClarifications.Add(item);
                 }
-                catch(InvalidOperationException ex)
+                var modules = _repo.GetModules();
+                Modules.Clear();
+                foreach (var item in modules)
                 {
-                    MessageBox.Show($"{ex.Message}");
+                    Modules.Add(item);
                 }
-                catch(Exception ex)
-                {
-                    MessageBox.Show($"{ex.Message}");
-                }         
-                
+            }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message}");
             }
         }
 
-        private void ApplyFilters()
+        public void UpdateSelectedModules()
+        {
+            var SelectedModules = Modules.Where(m => m.IsChecked).ToList(); // Get selected modules
+            this.SelectedModules.Clear();
+            foreach (var module in SelectedModules)
+            {
+                this.SelectedModules.Add(module.Name);
+            }
+        }
+
+        public void ApplyFilters()
         {
             // Logic to filter based on _filterStatus and _searchText
-            var filtered = Clarifications
-                            .Where(c => (string.IsNullOrEmpty(FilterStatus) || c.Status == FilterStatus) &&
-                                        (string.IsNullOrEmpty(SearchText) || c.Question.Contains(SearchText)))
-                            .ToList();
+            var filteredList = new ObservableCollection<Clarification>();
+            FilteredClarifications.Clear();
 
-            Clarifications = new ObservableCollection<Clarification>(filtered);
+            foreach (var clarification in TempClarifications)
+            {
+                bool matchesStatus = string.IsNullOrEmpty(FilterStatus) || clarification.Status.Equals(FilterStatus, StringComparison.OrdinalIgnoreCase);
+                bool matchesModule = !selectedModules.Any() ||
+                                     selectedModules.Contains(clarification.Module);
+
+                // If all conditions are met, add the clarification to the filtered list
+                if (matchesModule && matchesStatus)
+                {
+                    filteredList.Add(clarification);
+                }
+
+                foreach(var item in filteredList)
+                {
+                    FilteredClarifications.Add(item);
+                }
+            }
+            Clarifications.Clear();
+            foreach(var clarification in filteredList)
+            {
+                Clarifications.Add(clarification);
+            }
+        }
+
+        public void ResetFilter()
+        {
+            Clarifications.Clear();
+            foreach (var item in TempClarifications)
+            {
+                Clarifications.Add(item);
+            }
         }
     }
 }

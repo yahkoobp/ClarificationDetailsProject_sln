@@ -109,6 +109,7 @@ namespace ClarificationDetailsProject.ExcelRepo
             ObservableCollection<Clarification> clarifications = new ObservableCollection<Clarification>();
             Excel.Application excelApp = new Excel.Application();
             Excel.Workbook workbook = null;
+            Modules.Clear();
 
             try
             {
@@ -135,7 +136,7 @@ namespace ClarificationDetailsProject.ExcelRepo
                     int rowCount = usedRange.Rows.Count;
                     // Validate the worksheet headers
                     if (IsValidExcelWorkBook(worksheet))
-                    {
+                    {                       
                         //Add valid sheet names to modules list
                         Modules.Add(new Models.Module()
                         {
@@ -163,7 +164,7 @@ namespace ClarificationDetailsProject.ExcelRepo
                                         DateTime.TryParse(dateCell.Value2.ToString(), out DateTime date) ? date : DateTime.MinValue : DateTime.MinValue,
                                     DocumentName = documentNameCell != null && documentNameCell.Value2 != null ?
                                         documentNameCell.Value2.ToString() : string.Empty,
-                                    Module = (worksheet.Cells[1, 1] as Excel.Range).Value2?.ToString() ?? string.Empty,
+                                    Module = worksheet.Name,
                                     Question = questionCell != null && questionCell.Value2 != null ?
                                         questionCell.Value2.ToString() : string.Empty,
                                     Answer = answerCell != null && answerCell.Value2 != null ?
@@ -205,6 +206,30 @@ namespace ClarificationDetailsProject.ExcelRepo
             }
 
             return clarifications;
+        }
+
+        public ObservableCollection<Clarification> Filter(string status, DateTime? startDate, DateTime? endDate, List<string> selectedModuleNames)
+        {
+            // Create a temporary list to hold filtered results
+            var filteredList = new List<Clarification>();
+
+            foreach (var clarification in Clarifications)
+            {
+                bool matchesStatus = string.IsNullOrEmpty(status) || clarification.Status.Equals(status, StringComparison.OrdinalIgnoreCase);
+                bool matchesDate = (!startDate.HasValue || clarification.Date >= startDate) &&
+                                   (!endDate.HasValue || clarification.Date <= endDate);
+                bool matchesModule = !selectedModuleNames.Any() ||
+                                     selectedModuleNames.Contains(clarification.Module); // Assuming `Clarification` has a `ModuleName` property
+
+                // If all conditions are met, add the clarification to the filtered list
+                if (matchesStatus || matchesDate || matchesModule)
+                {
+                    filteredList.Add(clarification);
+                }
+            }
+
+            // Return the filtered results as an ObservableCollection
+            return new ObservableCollection<Clarification>(filteredList);
         }
 
         public ObservableCollection<Models.Module> GetModules()

@@ -27,6 +27,6 @@ namespace ClarificationDetailsProject.Repo
 
         ObservableCollection<Models.Module> GetModules();
 
-
+        ObservableCollection<Clarification> Filter(string status, DateTime? startDate, DateTime? endDate, List<string> selectedModuleNames);
     }
 }

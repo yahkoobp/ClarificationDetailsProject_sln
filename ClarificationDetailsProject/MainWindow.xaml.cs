@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ClarificationDetailsProject.ViewModels;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 
 namespace ClarificationDetailsProject
 {
@@ -21,10 +22,22 @@ namespace ClarificationDetailsProject
     /// </summary>
     public partial class MainWindow : Window
     {
+        ClarificationViewModel ViewModel { get; set; } = null;      
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new ClarificationViewModel();
+            ViewModel = new ClarificationViewModel();
+            this.DataContext = ViewModel;
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            ViewModel.UpdateSelectedModules();
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ViewModel.UpdateSelectedModules();
         }
     }
 }
