@@ -14,7 +14,7 @@ namespace ClarificationDetailsProject.Repo
         /// Loads the data from the data source
         /// </summary>
         /// <param name="filePath"></param>
-        ObservableCollection<Clarification> LoadData(string filePath);
+        Task<ObservableCollection<Clarification>> LoadDataAsync(string filePath);
         /// <summary>
         /// Apply filters to the loaded data
         /// </summary>

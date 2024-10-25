@@ -7,10 +7,19 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <DataGrid ItemsSource="{Binding Items,RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                  AutoGenerateColumns="False" 
-                  IsReadOnly="True" Height="300">
+        <Grid.Resources>
+            <Style x:Key="CenteredCellStyle" TargetType="TextBlock">
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+        </Grid.Resources>
+        <DataGrid ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+              AutoGenerateColumns="False" 
+              IsReadOnly="True" 
+              Height="300"
+              HorizontalAlignment="Center">
             <DataGrid.Resources>
+                <!-- Column Header Style -->
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Background" Value="Teal"/>
                     <Setter Property="Foreground" Value="White"/>
@@ -19,52 +28,43 @@
                     <Setter Property="Height" Value="30"/>
                 </Style>
             </DataGrid.Resources>
+
+            <!-- Row Style for Background Triggers -->
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                    <Setter Property="VerticalContentAlignment" Value="Center"/>
                     <Setter Property="Height" Value="30"/>
-                    <!-- Default background -->
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Status}" Value="Pending">
                             <Setter Property="Background" Value="LightBlue"/>
-                            <!-- Background for Pending status -->
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Status}" Value="Closed">
                             <Setter Property="Background" Value="LightYellow"/>
-                            <!-- Background for Closed status -->
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Status}" Value="Open">
                             <Setter Property="Background" Value="LightGreen"/>
-                            <!-- Background for In Progress status -->
                         </DataTrigger>
-
                         <DataTrigger Binding="{Binding Status}" Value="On Hold">
                             <Setter Property="Background" Value="LightCyan"/>
-                            <!-- Background for In Progress status -->
                         </DataTrigger>
-                        <!-- Add more conditions as needed -->
                     </Style.Triggers>
                 </Style>
             </DataGrid.RowStyle>
-            
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                    <Setter Property="VerticalContentAlignment" Value="Center"/>
-                </Style>
-            </DataGrid.CellStyle>
 
+            <!-- Columns with Centered Alignment -->
             <DataGrid.Columns>
-                <DataGridTextColumn Header="No" Binding="{Binding Number}" Width="80"/>
-                <DataGridTextColumn Header="Date" Binding="{Binding Date,StringFormat='{}{0:MM/dd/yyyy}'}" Width="100"/>
-                <DataGridTextColumn Header="Doc Name" Binding="{Binding DocumentName}" Width="150" />
-                <DataGridTextColumn Header="Question" Binding="{Binding Question}" Width="*" />
-                <DataGridTextColumn Header="Answer" Binding="{Binding Answer}" Width="*" />
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                <DataGridTextColumn Header="No" Binding="{Binding Number}" Width="80" 
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat='{}{0:MM/dd/yyyy}'}" Width="100" 
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Doc Name" Binding="{Binding DocumentName}" Width="150" 
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Question" Binding="{Binding Question}" Width="*" 
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Answer" Binding="{Binding Answer}" Width="*" 
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" 
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
             </DataGrid.Columns>
         </DataGrid>
-
     </Grid>
 </UserControl>

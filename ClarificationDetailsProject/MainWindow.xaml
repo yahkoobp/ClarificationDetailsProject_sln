@@ -21,7 +21,15 @@
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="FilePath: " VerticalAlignment="Center" Width="60" />
                         <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4" IsEnabled="False" Text="{Binding FilePath , Mode=TwoWay}"/>
-                        <Button Content="..." Width="100" Margin="10 0 0 0" Command="{Binding ShowDialogCommand}"/>
+                        <Button Content="..." Width="100" Command="{Binding ShowDialogCommand}" Height="30" Margin="10 0 0 0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="teal" CornerRadius="3" Padding="5">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="FileName: " VerticalAlignment="Center" Width="60"/>
@@ -39,14 +47,20 @@
                         <TextBlock Text="Modules: " VerticalAlignment="Center" Width="70"/>
                         <WrapPanel Orientation="Horizontal" Width="300">
                             <CheckBox Content="Select All" 
-                               IsChecked="{Binding IsAllChecked, Mode=TwoWay}" />
+              IsChecked="{Binding IsAllChecked, Mode=TwoWay}" />
                             <ItemsControl ItemsSource="{Binding Modules}" Margin="10 0 0 0">
+                                <ItemsControl.ItemsPanel>
+                                    <!-- Set WrapPanel as the panel for ItemsControl items -->
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <CheckBox Content="{Binding Name}" 
-                                      IsChecked="{Binding IsChecked, Mode=TwoWay}" 
-                                                  Checked="CheckBox_Checked"
-                                                  Unchecked="CheckBox_Unchecked"/>
+                                        <CheckBox Margin="10 0 0 0" Content="{Binding Name}" 
+                          IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                          Checked="CheckBox_Checked"
+                          Unchecked="CheckBox_Unchecked"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -84,7 +98,7 @@
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="Search Text: " VerticalAlignment="Center" Width="60"/>
                         <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4"
-                                 Text="{Binding SearchText , Mode=TwoWay}"/>
+                                 Text="{Binding SearchText}"/>
                         <Button Content="Search" Width="100" Margin="10 0 0 0" Command="{Binding SearchCommand}"/>
                     </StackPanel>
                 </StackPanel>

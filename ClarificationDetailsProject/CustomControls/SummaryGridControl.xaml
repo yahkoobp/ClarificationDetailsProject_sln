@@ -7,9 +7,17 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
+        <Grid.Resources>
+            <!-- CenteredCellStyle for cell content alignment -->
+            <Style x:Key="CenteredCellStyle" TargetType="TextBlock">
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+        </Grid.Resources>
+
         <DataGrid ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-          AutoGenerateColumns="False" 
-          IsReadOnly="True">
+              AutoGenerateColumns="False" 
+              IsReadOnly="True">
             <DataGrid.Resources>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Background" Value="Teal"/>
@@ -19,6 +27,7 @@
                     <Setter Property="Height" Value="30"/>
                 </Style>
             </DataGrid.Resources>
+
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <Setter Property="Background" Value="AliceBlue"/>
@@ -27,13 +36,21 @@
                     <Setter Property="Height" Value="30"/>
                 </Style>
             </DataGrid.RowStyle>
+
+            <!-- Columns with CenteredCellStyle applied -->
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Module Name" Binding="{Binding Module}"  Width="200"/>
-                <DataGridTextColumn Header="Closed" Binding="{Binding Closed}" Width="*" />
-                <DataGridTextColumn Header="Open" Binding="{Binding Open}" Width="*"/>
-                <DataGridTextColumn Header="Pending" Binding="{Binding Pending}" Width="*"/>
-                <DataGridTextColumn Header="On Hold" Binding="{Binding OnHold}" Width="*" />
-                <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="*"/>
+                <DataGridTextColumn Header="Module Name" Binding="{Binding Module}" Width="200"
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Closed" Binding="{Binding Closed}" Width="*"
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Open" Binding="{Binding Open}" Width="*"
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Pending" Binding="{Binding Pending}" Width="*"
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="On Hold" Binding="{Binding OnHold}" Width="*"
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="*"
+                                ElementStyle="{StaticResource CenteredCellStyle}" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

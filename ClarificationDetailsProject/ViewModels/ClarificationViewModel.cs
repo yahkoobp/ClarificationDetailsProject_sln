@@ -248,7 +248,7 @@ namespace ClarificationDetailsProject.ViewModels
 
         public ClarificationViewModel()
         {
-            LoadExcelCommand = new RelayCommand(LoadExcel);
+            LoadExcelCommand = new RelayCommand(LoadExcelAsync);
             ShowDialogCommand = new RelayCommand(ShowDialog);
             ApplyFilterCommand = new RelayCommand(ApplyFilters);
             ResetFilterCommand = new RelayCommand(ResetFilter);
@@ -281,14 +281,24 @@ namespace ClarificationDetailsProject.ViewModels
                 this.FileName = Path.GetFileName(FilePath);
             }
         }
-        public void LoadExcel()
+        public async void LoadExcelAsync()
         {
+            if (string.IsNullOrWhiteSpace(FilePath))
+            {
+                MessageBox.Show("Please select a file");
+                return;
+            }
+
             IsLoading = true;
             ButtonText = "Loading...";
             string filePath = this.FilePath;
+
             try
             {
-                var data = _repo.LoadData(filePath);
+                // Load data asynchronously
+                var data = await _repo.LoadDataAsync(filePath);
+
+                // Clear existing data and add the new data
                 Clarifications.Clear();
                 TempClarifications.Clear();
                 foreach (var item in data)
@@ -296,31 +306,37 @@ namespace ClarificationDetailsProject.ViewModels
                     Clarifications.Add(item);
                     TempClarifications.Add(item);
                 }
+
+                // Load summaries and modules
                 var summaries = _repo.GetSummaries();
-                this.Summaries.Clear();
-                foreach(var summary in summaries)
+                Summaries.Clear();
+                foreach (var summary in summaries)
                 {
-                    this.Summaries.Add(summary);
+                    Summaries.Add(summary);
                 }
+
                 var modules = _repo.GetModules();
                 Modules.Clear();
                 foreach (var item in modules)
                 {
                     Modules.Add(item);
                 }
-                IsLoading = false;
-                ButtonText = "Show Details";
             }
             catch (InvalidOperationException ex)
             {
-                MessageBox.Show($"{ex.Message}");
+                MessageBox.Show($"Operation error: {ex.Message}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{ex.Message}");
+                MessageBox.Show($"An unexpected error occurred: {ex.Message}");
+            }
+            finally
+            {
+                // Ensure loading state is reset
+                IsLoading = false;
+                ButtonText = "Show Details";
             }
         }
-
         public void UpdateSelectedModules()
         {
             var SelectedModules = Modules.Where(m => m.IsChecked).ToList(); // Get selected modules

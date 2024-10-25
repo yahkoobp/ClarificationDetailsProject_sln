@@ -107,17 +107,17 @@ namespace ClarificationDetailsProject.ExcelRepo
             return true;
         }
 
-        public ObservableCollection<Clarification> LoadData(string filePath)
+        public async Task<ObservableCollection<Clarification>> LoadDataAsync(string filePath)
         {
-            //ObservableCollection<Clarification> clarifications = new ObservableCollection<Clarification>();
+           // ObservableCollection<Clarification> clarifications = new ObservableCollection<Clarification>();
             Excel.Application excelApp = new Excel.Application();
             Excel.Workbook workbook = null;
             Modules.Clear();
 
             try
             {
-                // Open the workbook
-                workbook = excelApp.Workbooks.Open(filePath);
+                // Open the workbook asynchronously
+                workbook = await Task.Run(() => excelApp.Workbooks.Open(filePath));
 
                 // Check if the workbook has any worksheets
                 if (workbook.Worksheets.Count == 0)
@@ -128,59 +128,63 @@ namespace ClarificationDetailsProject.ExcelRepo
                 // Loop through each worksheet in the workbook
                 foreach (Excel.Worksheet worksheet in workbook.Worksheets)
                 {
-                    //Check if worksheet contains any data
                     Excel.Range usedRange = worksheet.UsedRange;
-                    string name = worksheet.Name;
-                    int count = usedRange.Rows.Count;
-                    if(usedRange == null || count == 0)
-                    {
-                        throw new InvalidOperationException($"The worksheet '{worksheet.Name}' does not contain any data.");
-                    }
                     int rowCount = usedRange.Rows.Count;
+
                     // Validate the worksheet headers
                     if (IsValidExcelWorkBook(worksheet))
-                    {                       
-                        //Add valid sheet names to modules list
+                    {
+                        // Add valid sheet names to modules list
                         Modules.Add(new Models.Module()
                         {
                             Name = worksheet.Name,
                             IsChecked = false,
                         });
-                        // Loop through the rows starting from row 3
-                        for (int row = 3; row <= rowCount; row++)
-                        {
-                            try
-                            {
-                                var numberCell = worksheet.Cells[row, 1] as Excel.Range;
-                                var dateCell = worksheet.Cells[row, 2] as Excel.Range;
-                                var documentNameCell = worksheet.Cells[row, 3] as Excel.Range;
-                                var questionCell = worksheet.Cells[row, 6] as Excel.Range;
-                                var answerCell = worksheet.Cells[row, 8] as Excel.Range;
-                                var statusCell = worksheet.Cells[row, 10] as Excel.Range;
 
-                                // Add the data to the collection
-                                Clarifications.Add(new Clarification
-                                {
-                                    Number = numberCell != null && numberCell.Value2 != null ?
-                                        int.TryParse(numberCell.Value2.ToString(), out int number) ? number : 0 : 0,
-                                    Date = dateCell != null && dateCell.Value2 != null ?
-                                        ConvertExcelDateToDateTime(dateCell.Value2) : DateTime.MinValue,
-                                    DocumentName = documentNameCell != null && documentNameCell.Value2 != null ?
-                                        documentNameCell.Value2.ToString() : string.Empty,
-                                    Module = worksheet.Name,
-                                    Question = questionCell != null && questionCell.Value2 != null ?
-                                        questionCell.Value2.ToString() : string.Empty,
-                                    Answer = answerCell != null && answerCell.Value2 != null ?
-                                        answerCell.Value2.ToString() : string.Empty,
-                                    Status = statusCell != null && statusCell.Value2 != null ?
-                                        statusCell.Value2.ToString() : string.Empty,
-                                });
-                            }
-                            catch (Exception)
+                        // Process each row asynchronously
+                        await Task.Run(() =>
+                        {
+                            for (int row = 3; row <= rowCount; row++)
                             {
-                                throw new InvalidOperationException($"Error processing row {row} in worksheet '{worksheet.Name}'");
+                                try
+                                {
+                                    var numberCell = worksheet.Cells[row, 1] as Excel.Range;
+                                    var dateCell = worksheet.Cells[row, 2] as Excel.Range;
+                                    var documentNameCell = worksheet.Cells[row, 3] as Excel.Range;
+                                    var questionCell = worksheet.Cells[row, 6] as Excel.Range;
+                                    var answerCell = worksheet.Cells[row, 8] as Excel.Range;
+                                    var statusCell = worksheet.Cells[row, 10] as Excel.Range;
+
+                                    // Add the data to the collection
+                                    Clarifications.Add(new Clarification
+                                    {
+                                        Number = numberCell != null && numberCell.Value2 != null
+                                            ? int.TryParse(numberCell.Value2.ToString(), out int number) ? number : 0
+                                            : 0,
+                                        Date = dateCell != null && dateCell.Value2 != null
+                                            ? ConvertExcelDateToDateTime(dateCell.Value2)
+                                            : DateTime.MinValue,
+                                        DocumentName = documentNameCell != null && documentNameCell.Value2 != null
+                                            ? documentNameCell.Value2.ToString()
+                                            : string.Empty,
+                                        Module = worksheet.Name,
+                                        Question = questionCell != null && questionCell.Value2 != null
+                                            ? questionCell.Value2.ToString()
+                                            : string.Empty,
+                                        Answer = answerCell != null && answerCell.Value2 != null
+                                            ? answerCell.Value2.ToString()
+                                            : string.Empty,
+                                        Status = statusCell != null && statusCell.Value2 != null
+                                            ? statusCell.Value2.ToString()
+                                            : string.Empty,
+                                    });
+                                }
+                                catch (Exception)
+                                {
+                                    throw new InvalidOperationException($"Error processing row {row} in worksheet '{worksheet.Name}'");
+                                }
                             }
-                        }
+                        });
                     }
                     else
                     {
