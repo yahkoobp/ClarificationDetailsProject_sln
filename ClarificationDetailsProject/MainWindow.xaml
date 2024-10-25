@@ -26,7 +26,7 @@
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="FileName: " VerticalAlignment="Center" Width="60"/>
                         <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4" IsEnabled="False" Text="{Binding FileName , Mode=TwoWay}"/>
-                        <Button Content="Show Details" Width="100" Margin="10 0 0 0" Command="{Binding LoadExcelCommand}"/>
+                        <Button Content="{Binding ButtonText , Mode=TwoWay}" Width="100" Margin="10 0 0 0" Command="{Binding LoadExcelCommand}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal"></StackPanel>
                 </StackPanel>
@@ -83,16 +83,17 @@
                     <TextBlock Text="Search Conditions" FontWeight="Bold" Margin="10 10 0 0"/>
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="Search Text: " VerticalAlignment="Center" Width="60"/>
-                        <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4"/>
-                        <Button Content="Search" Width="100" Margin="10 0 0 0"/>
+                        <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4"
+                                 Text="{Binding SearchText , Mode=TwoWay}"/>
+                        <Button Content="Search" Width="100" Margin="10 0 0 0" Command="{Binding SearchCommand}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
             
             <Border Grid.Row="3" BorderBrush="gray" BorderThickness="1" Margin="0 10 0 0">
                 <StackPanel Orientation="Vertical">
-                    <TabControl>
-                        <TabItem Header="Detail" Width="100" Height="30">
+                    <TabControl SelectedItem="{Binding SelectedTab , Mode=TwoWay}">
+                        <TabItem Header="Details" Width="100" Height="30">
                             <controls:DetailsGridControl Items="{Binding Clarifications}"/>
                         </TabItem>
                         <TabItem Header="Summary" Width="100" Height="30">
@@ -100,7 +101,7 @@
                         </TabItem>
                     </TabControl>
                     <Button Content="Export" Width="200" Height="30" Background="Teal" Foreground="white" FontWeight="Bold" HorizontalAlignment="Right" Margin="10"
-                            Command="{Binding ExportClarificationsToExcelCommand}"/>
+                            Command="{Binding ExportToExcelCommand}"/>
                 </StackPanel>
             </Border>
 

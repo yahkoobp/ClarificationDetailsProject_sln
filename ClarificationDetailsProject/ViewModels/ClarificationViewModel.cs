@@ -26,6 +26,8 @@ using System.IO;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Win32;
+using System.Web.UI;
+using System.Windows.Controls;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -43,7 +45,8 @@ namespace ClarificationDetailsProject.ViewModels
         private ObservableCollection<Clarification> _clarifications;
         private ObservableCollection<Models.Module> _modules;
         private Clarification _selectedClarification;
-        private string _searchText;
+        public bool IsFilterApplied { get; set; } = false;
+        public bool IsLoading { get; set; } = false;
 
         public ObservableCollection<Clarification> Clarifications
         {
@@ -193,10 +196,44 @@ namespace ClarificationDetailsProject.ViewModels
 
             }
         }
+
+        private object _selectedTab;
+        public object SelectedTab
+        {
+            get => _selectedTab;
+            set
+            {
+                _selectedTab = value;
+                OnPropertyChanged(nameof(SelectedTab));
+            }
+        }
+
+        private string _searchText;
         public string SearchText
         {
-            get { return _searchText; }
-            set { _searchText = value; OnPropertyChanged(nameof(SearchText)); ApplyFilters(); }
+            get 
+            {
+                return _searchText; 
+            }
+            set 
+            {
+                _searchText = value; 
+                OnPropertyChanged(nameof(SearchText)); ApplyFilters(); 
+            }
+        }
+
+        private string buttonText;
+        public string ButtonText
+        {
+            get
+            {
+                return buttonText;
+            }
+            set
+            {
+                buttonText = value;
+                OnPropertyChanged(nameof(ButtonText));
+            }
         }
 
         // Command for loading Excel
@@ -206,7 +243,8 @@ namespace ClarificationDetailsProject.ViewModels
         public ICommand ApplyFilterCommand { get; }
 
         public ICommand ResetFilterCommand { get; }
-        public ICommand ExportClarificationsToExcelCommand { get; }
+        public ICommand ExportToExcelCommand { get; }
+        public ICommand SearchCommand {  get; }
 
         public ClarificationViewModel()
         {
@@ -214,7 +252,8 @@ namespace ClarificationDetailsProject.ViewModels
             ShowDialogCommand = new RelayCommand(ShowDialog);
             ApplyFilterCommand = new RelayCommand(ApplyFilters);
             ResetFilterCommand = new RelayCommand(ResetFilter);
-            ExportClarificationsToExcelCommand = new RelayCommand(ExportClarificationToExcel);
+            ExportToExcelCommand = new RelayCommand(ExportToExcel);
+            SearchCommand = new RelayCommand(Search);
 
             this.FilePath = string.Empty;
             Clarifications = new ObservableCollection<Clarification>()
@@ -228,6 +267,7 @@ namespace ClarificationDetailsProject.ViewModels
             TempClarifications = new ObservableCollection<Clarification>();
             Modules = new ObservableCollection<Models.Module>();
             selectedModules = new List<string>();
+            buttonText = "Show Details";
         }
 
         public void ShowDialog()
@@ -243,6 +283,8 @@ namespace ClarificationDetailsProject.ViewModels
         }
         public void LoadExcel()
         {
+            IsLoading = true;
+            ButtonText = "Loading...";
             string filePath = this.FilePath;
             try
             {
@@ -266,6 +308,8 @@ namespace ClarificationDetailsProject.ViewModels
                 {
                     Modules.Add(item);
                 }
+                IsLoading = false;
+                ButtonText = "Show Details";
             }
             catch (InvalidOperationException ex)
             {
@@ -289,6 +333,7 @@ namespace ClarificationDetailsProject.ViewModels
 
         public void ApplyFilters()
         {
+            IsFilterApplied = true;
             // Logic to filter based on _filterStatus and _searchText
             var filteredList = new ObservableCollection<Clarification>();
             FilteredClarifications.Clear();
@@ -318,12 +363,53 @@ namespace ClarificationDetailsProject.ViewModels
                 Clarifications.Add(clarification);
             }
         }
+
+        public void Search()
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+                return; // Return if search text is empty
+
+            SearchText = SearchText.ToLower();
+
+            var results =  TempClarifications.Where(c =>
+                c.Number.ToString().Contains(SearchText) ||
+                (c.DocumentName?.ToLower().Contains(SearchText) ?? false) ||
+                (c.Module?.ToLower().Contains(SearchText) ?? false) ||
+                (c.Status?.ToLower().Contains(SearchText) ?? false) ||
+                c.Date.ToString("yyyy-MM-dd").Contains(SearchText) ||
+                (c.Question?.ToLower().Contains(SearchText) ?? false) ||
+                (c.Answer?.ToLower().Contains(SearchText) ?? false)
+            );
+
+            Clarifications.Clear();
+            foreach(var result in results)
+            {
+                Clarifications.Add(result);
+            }
+        }
         public void ResetFilter()
         {
+            IsFilterApplied = false;
+            filteredClarifications.Clear();
             Clarifications.Clear();
             foreach (var item in TempClarifications)
             {
                 Clarifications.Add(item);
+            }
+        }
+
+        public void ExportToExcel()
+        {
+            if (SelectedTab is TabItem tabItem)
+            {
+                if (tabItem.Header.ToString() == "Details")
+                {
+                    ExportClarificationToExcel();
+                }
+                else if (tabItem.Header.ToString() == "Summary")
+                {
+                    ExportSummaryToExcel();
+                }
             }
         }
 
@@ -339,8 +425,35 @@ namespace ClarificationDetailsProject.ViewModels
 
             if (saveFileDialog.ShowDialog() == true)
             {
-                _repo.ExportClarificationsToExcel(saveFileDialog.FileName);
+                if (IsFilterApplied)
+                {
+                    _repo.ExportClarificationsToExcel(FilteredClarifications, saveFileDialog.FileName);
+                }
+                else
+                {
+                    _repo.ExportClarificationsToExcel(Clarifications, saveFileDialog.FileName);
+                }
+                
             }
         }
+
+        public void ExportSummaryToExcel()
+        {
+            // Open a SaveFileDialog to specify the file path
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx",
+                Title = "Save Summary File",
+                FileName = "Summaries.xlsx" // Default file name
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                _repo.ExportSummaryToExcel(Summaries , saveFileDialog.FileName);
+
+            }
+        }
+
+
     }
 }

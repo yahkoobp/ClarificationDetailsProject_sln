@@ -279,7 +279,7 @@ namespace ClarificationDetailsProject.ExcelRepo
             return DateTime.MinValue; // Return a default value if the input is not a valid date
         }
 
-        public void ExportClarificationsToExcel(string filename)
+        public void ExportClarificationsToExcel(ObservableCollection<Clarification> clarifications , string filename)
         {
             // Create Excel application
             Excel.Application excelApp = new Excel.Application();
@@ -301,7 +301,7 @@ namespace ClarificationDetailsProject.ExcelRepo
 
             // Fill data
             int row = 2;
-            foreach (var clarification in Clarifications)
+            foreach (var clarification in clarifications)
             {
                 clarificationSheet.Cells[row, 1] = clarification.Number;
                 clarificationSheet.Cells[row, 2] = clarification.Date.ToShortDateString();
@@ -324,48 +324,48 @@ namespace ClarificationDetailsProject.ExcelRepo
             Marshal.ReleaseComObject(excelApp);
         }
 
-        //public void ExportSummaryToExcel(ObservableCollection<Summary> summaries, string filename)
-        //{
-        //    // Create Excel application
-        //    Excel.Application excelApp = new Excel.Application();
-        //    excelApp.Visible = false; // Set to true if you want to see the Excel window
+        public void ExportSummaryToExcel(ObservableCollection<Summary> summaries, string filename)
+        {
+            // Create Excel application
+            Excel.Application excelApp = new Excel.Application();
+            excelApp.Visible = false; // Set to true if you want to see the Excel window
 
-        //    // Create a new workbook
-        //    Excel.Workbook workbook = excelApp.Workbooks.Add();
-        //    Excel.Worksheet summarySheet = (Excel.Worksheet)workbook.Sheets[1];
-        //    summarySheet.Name = "Summary";
+            // Create a new workbook
+            Excel.Workbook workbook = excelApp.Workbooks.Add();
+            Excel.Worksheet summarySheet = (Excel.Worksheet)workbook.Sheets[1];
+            summarySheet.Name = "Summary";
 
-        //    // Set headers
-        //    summarySheet.Cells[1, 1] = "Module";
-        //    summarySheet.Cells[1, 2] = "Closed";
-        //    summarySheet.Cells[1, 3] = "Open";
-        //    summarySheet.Cells[1, 4] = "On Hold";
-        //    summarySheet.Cells[1, 5] = "Pending";
-        //    summarySheet.Cells[1, 6] = "Total";
+            // Set headers
+            summarySheet.Cells[1, 1] = "Module";
+            summarySheet.Cells[1, 2] = "Closed";
+            summarySheet.Cells[1, 3] = "Open";
+            summarySheet.Cells[1, 4] = "On Hold";
+            summarySheet.Cells[1, 5] = "Pending";
+            summarySheet.Cells[1, 6] = "Total";
 
-        //    // Fill data
-        //    int row = 2;
-        //    foreach (var summary in summaries)
-        //    {
-        //        summarySheet.Cells[row, 1] = summary.Module;
-        //        summarySheet.Cells[row, 2] = summary.Closed;
-        //        summarySheet.Cells[row, 3] = summary.Open;
-        //        summarySheet.Cells[row, 4] = summary.OnHold;
-        //        summarySheet.Cells[row, 5] = summary.Pending;
-        //        summarySheet.Cells[row, 6] = summary.Total;
-        //        row++;
-        //    }
+            // Fill data
+            int row = 2;
+            foreach (var summary in summaries)
+            {
+                summarySheet.Cells[row, 1] = summary.Module;
+                summarySheet.Cells[row, 2] = summary.Closed;
+                summarySheet.Cells[row, 3] = summary.Open;
+                summarySheet.Cells[row, 4] = summary.OnHold;
+                summarySheet.Cells[row, 5] = summary.Pending;
+                summarySheet.Cells[row, 6] = summary.Total;
+                row++;
+            }
 
-        //    // Save and close the workbook
-        //    workbook.SaveAs(filename);
-        //    workbook.Close();
-        //    excelApp.Quit();
+            // Save and close the workbook
+            workbook.SaveAs(filename);
+            workbook.Close();
+            excelApp.Quit();
 
-        //    // Cleanup
-        //    Marshal.ReleaseComObject(summarySheet);
-        //    Marshal.ReleaseComObject(workbook);
-        //    Marshal.ReleaseComObject(excelApp);
-        //}
+            // Cleanup
+            Marshal.ReleaseComObject(summarySheet);
+            Marshal.ReleaseComObject(workbook);
+            Marshal.ReleaseComObject(excelApp);
+        }
     }
 }
 

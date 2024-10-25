@@ -31,6 +31,9 @@ namespace ClarificationDetailsProject.Repo
 
         ObservableCollection<Summary> GetSummaries();
 
-        void ExportClarificationsToExcel(string filename);
+        void ExportClarificationsToExcel(ObservableCollection<Clarification> clarifications , string filename);
+        void ExportSummaryToExcel(ObservableCollection<Summary> summaries, string filename);
+
+
     }
 }
