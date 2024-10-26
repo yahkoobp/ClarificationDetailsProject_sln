@@ -16,21 +16,12 @@ namespace ClarificationDetailsProject.Repo
         /// <param name="filePath"></param>
         Task<ObservableCollection<Clarification>> LoadDataAsync(string filePath);
         /// <summary>
-        /// Apply filters to the loaded data
-        /// </summary>
-        void ApplyFilters();
-        /// <summary>
         /// Searches the data source for the specified text
         /// </summary>
         /// <param name="text"></param>
         void Search(string text);
-
         ObservableCollection<Models.Module> GetModules();
-
-        ObservableCollection<Clarification> Filter(string status, DateTime? startDate, DateTime? endDate, List<string> selectedModuleNames);
-
         ObservableCollection<Summary> GetSummaries();
-
         void ExportClarificationsToExcel(ObservableCollection<Clarification> clarifications , string filename);
         void ExportSummaryToExcel(ObservableCollection<Summary> summaries, string filename);
 

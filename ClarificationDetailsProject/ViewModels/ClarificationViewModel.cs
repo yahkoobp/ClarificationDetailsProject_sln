@@ -28,6 +28,7 @@ using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Win32;
 using System.Web.UI;
 using System.Windows.Controls;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -46,6 +47,7 @@ namespace ClarificationDetailsProject.ViewModels
         private ObservableCollection<Models.Module> _modules;
         private Clarification _selectedClarification;
         public bool IsFilterApplied { get; set; } = false;
+        public bool IsSearchApplied { get; set; } = false;
         public bool IsLoading { get; set; } = false;
 
         public ObservableCollection<Clarification> Clarifications
@@ -77,7 +79,10 @@ namespace ClarificationDetailsProject.ViewModels
         private ObservableCollection<Clarification> filteredClarifications;
         public ObservableCollection<Clarification> FilteredClarifications
         {
-            get { return filteredClarifications; ; }
+            get 
+            { 
+                return filteredClarifications; 
+            }
             set
             {
                 filteredClarifications = value;
@@ -244,7 +249,6 @@ namespace ClarificationDetailsProject.ViewModels
 
         public ICommand ResetFilterCommand { get; }
         public ICommand ExportToExcelCommand { get; }
-        public ICommand SearchCommand {  get; }
 
         public ClarificationViewModel()
         {
@@ -253,7 +257,6 @@ namespace ClarificationDetailsProject.ViewModels
             ApplyFilterCommand = new RelayCommand(ApplyFilters);
             ResetFilterCommand = new RelayCommand(ResetFilter);
             ExportToExcelCommand = new RelayCommand(ExportToExcel);
-            SearchCommand = new RelayCommand(Search);
 
             this.FilePath = string.Empty;
             Clarifications = new ObservableCollection<Clarification>()
@@ -295,12 +298,16 @@ namespace ClarificationDetailsProject.ViewModels
 
             try
             {
+                // Clear all collections before loading new data
+                Clarifications.Clear();
+                TempClarifications.Clear();
+                Summaries.Clear();
+                Modules.Clear();
+
                 // Load data asynchronously
                 var data = await _repo.LoadDataAsync(filePath);
 
-                // Clear existing data and add the new data
-                Clarifications.Clear();
-                TempClarifications.Clear();
+                // Add new data to Clarifications and TempClarifications
                 foreach (var item in data)
                 {
                     Clarifications.Add(item);
@@ -309,14 +316,12 @@ namespace ClarificationDetailsProject.ViewModels
 
                 // Load summaries and modules
                 var summaries = _repo.GetSummaries();
-                Summaries.Clear();
                 foreach (var summary in summaries)
                 {
                     Summaries.Add(summary);
                 }
 
                 var modules = _repo.GetModules();
-                Modules.Clear();
                 foreach (var item in modules)
                 {
                     Modules.Add(item);
@@ -337,6 +342,7 @@ namespace ClarificationDetailsProject.ViewModels
                 ButtonText = "Show Details";
             }
         }
+
         public void UpdateSelectedModules()
         {
             var SelectedModules = Modules.Where(m => m.IsChecked).ToList(); // Get selected modules
@@ -350,62 +356,58 @@ namespace ClarificationDetailsProject.ViewModels
         public void ApplyFilters()
         {
             IsFilterApplied = true;
-            // Logic to filter based on _filterStatus and _searchText
+            IsSearchApplied = !string.IsNullOrWhiteSpace(SearchText); // Check if search is needed
+
             var filteredList = new ObservableCollection<Clarification>();
             FilteredClarifications.Clear();
 
+            // Convert SearchText to lowercase for case-insensitive search if applicable
+            var searchTextLower = SearchText?.ToLower();
+
             foreach (var clarification in TempClarifications)
             {
-                bool matchesStatus = string.IsNullOrEmpty(FilterStatus) || clarification.Status.Equals(FilterStatus, StringComparison.OrdinalIgnoreCase) || FilterStatus.CompareTo("All") == 0;
-                bool matchesModule = !selectedModules.Any() ||
-                                     selectedModules.Contains(clarification.Module);
-                //bool matchesDate = (FilterFromDate == null || clarification.Date >= FilterFromDate) &&
-                //                   (FilterToDate == null || clarification.Date <= FilterToDate);
+                // Check status and module filters
+                bool matchesStatus = string.IsNullOrEmpty(FilterStatus) ||
+                                     clarification.Status.Equals(FilterStatus, StringComparison.OrdinalIgnoreCase) ||
+                                     FilterStatus.Equals("All", StringComparison.OrdinalIgnoreCase);
+                bool matchesModule = !selectedModules.Any() || selectedModules.Contains(clarification.Module);
+
+                // Check if it matches search criteria if SearchText is not empty
+                bool matchesSearch = true;
+                if (IsSearchApplied)
+                {
+                    matchesSearch = clarification.Number.ToString().Contains(searchTextLower) ||
+                                    (clarification.DocumentName?.ToLower().Contains(searchTextLower) ?? false) ||
+                                    (clarification.Module?.ToLower().Contains(searchTextLower) ?? false) ||
+                                    (clarification.Status?.ToLower().Contains(searchTextLower) ?? false) ||
+                                    clarification.Date.ToString("yyyy-MM-dd").Contains(searchTextLower) ||
+                                    (clarification.Question?.ToLower().Contains(searchTextLower) ?? false) ||
+                                    (clarification.Answer?.ToLower().Contains(searchTextLower) ?? false);
+                }
 
                 // If all conditions are met, add the clarification to the filtered list
-                if (matchesModule && matchesStatus)
+                if (matchesStatus && matchesModule && matchesSearch)
                 {
                     filteredList.Add(clarification);
                 }
-
-                foreach(var item in filteredList)
-                {
-                    FilteredClarifications.Add(item);
-                }
             }
+
+            // Update the collections
+            foreach (var item in filteredList)
+            {
+                FilteredClarifications.Add(item);
+            }
+
             Clarifications.Clear();
-            foreach(var clarification in filteredList)
+            foreach (var clarification in filteredList)
             {
                 Clarifications.Add(clarification);
-            }
-        }
-
-        public void Search()
-        {
-            if (string.IsNullOrWhiteSpace(SearchText))
-                return; // Return if search text is empty
-
-            SearchText = SearchText.ToLower();
-
-            var results =  TempClarifications.Where(c =>
-                c.Number.ToString().Contains(SearchText) ||
-                (c.DocumentName?.ToLower().Contains(SearchText) ?? false) ||
-                (c.Module?.ToLower().Contains(SearchText) ?? false) ||
-                (c.Status?.ToLower().Contains(SearchText) ?? false) ||
-                c.Date.ToString("yyyy-MM-dd").Contains(SearchText) ||
-                (c.Question?.ToLower().Contains(SearchText) ?? false) ||
-                (c.Answer?.ToLower().Contains(SearchText) ?? false)
-            );
-
-            Clarifications.Clear();
-            foreach(var result in results)
-            {
-                Clarifications.Add(result);
             }
         }
         public void ResetFilter()
         {
             IsFilterApplied = false;
+            IsSearchApplied = false;
             filteredClarifications.Clear();
             Clarifications.Clear();
             foreach (var item in TempClarifications)
@@ -444,10 +446,12 @@ namespace ClarificationDetailsProject.ViewModels
                 if (IsFilterApplied)
                 {
                     _repo.ExportClarificationsToExcel(FilteredClarifications, saveFileDialog.FileName);
+                    MessageBox.Show($"Exported Successfully");
                 }
                 else
                 {
                     _repo.ExportClarificationsToExcel(Clarifications, saveFileDialog.FileName);
+                    MessageBox.Show($"Exported Successfully");
                 }
                 
             }
@@ -466,7 +470,7 @@ namespace ClarificationDetailsProject.ViewModels
             if (saveFileDialog.ShowDialog() == true)
             {
                 _repo.ExportSummaryToExcel(Summaries , saveFileDialog.FileName);
-
+                MessageBox.Show($"Exported Successfully");
             }
         }
 

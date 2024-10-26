@@ -38,7 +38,6 @@ namespace ClarificationDetailsProject.ExcelRepo
     public class ExcelDataRepo : IRepo
     {
         ObservableCollection<Clarification> Clarifications = new ObservableCollection<Clarification>();
-       // ObservableCollection<Summary> Summaries = new ObservableCollection<Summary>();
         ObservableCollection<Models.Module> Modules = new ObservableCollection<Models.Module>();
         private List<string> expectedHeaders = new List<string>() 
         {
@@ -54,11 +53,6 @@ namespace ClarificationDetailsProject.ExcelRepo
             "status",
             "Remarks"
         };
-
-        public void ApplyFilters()
-        {
-            throw new NotImplementedException();
-        }
         public bool IsValidExcelWorkBook(Excel.Worksheet worksheet)
         {
             try
@@ -109,13 +103,14 @@ namespace ClarificationDetailsProject.ExcelRepo
 
         public async Task<ObservableCollection<Clarification>> LoadDataAsync(string filePath)
         {
-           // ObservableCollection<Clarification> clarifications = new ObservableCollection<Clarification>();
             Excel.Application excelApp = new Excel.Application();
             Excel.Workbook workbook = null;
             Modules.Clear();
 
             try
             {
+                //Clear previous data
+                Clarifications.Clear();
                 // Open the workbook asynchronously
                 workbook = await Task.Run(() => excelApp.Workbooks.Open(filePath));
 
@@ -179,22 +174,35 @@ namespace ClarificationDetailsProject.ExcelRepo
                                             : string.Empty,
                                     });
                                 }
-                                catch (Exception)
+                                catch (Exception ex)
                                 {
-                                    throw new InvalidOperationException($"Error processing row {row} in worksheet '{worksheet.Name}'");
+                                    throw new InvalidOperationException($"Error processing row {row} in worksheet '{worksheet.Name}'", ex);
                                 }
                             }
                         });
                     }
                     else
                     {
-                        MessageBox.Show($"Invalid headers in sheet '{worksheet.Name}'. Press OK to continue.");
+                        MessageBox.Show($"Invalid headers in sheet '{worksheet.Name}'.");
+                        //throw new InvalidOperationException($"Invalid headers in sheet '{worksheet.Name}'.");
                     }
                 }
             }
+            catch (COMException comEx)
+            {
+                throw new InvalidOperationException("An error occurred while interacting with Excel. Please check the file and try again.", comEx);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (UnauthorizedAccessException unauthEx)
+            {
+                throw new InvalidOperationException("Access to the file is denied. Please check the file permissions and try again.", unauthEx);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading data from Excel: {ex.Message}");
+                throw new InvalidOperationException("An unexpected error occurred. Please try again or contact support.", ex);
             }
             finally
             {
@@ -215,6 +223,7 @@ namespace ClarificationDetailsProject.ExcelRepo
             return Clarifications;
         }
 
+
         public ObservableCollection<Summary> GetSummaries()
         {
             var summaries = from clarification in Clarifications
@@ -230,30 +239,6 @@ namespace ClarificationDetailsProject.ExcelRepo
                     };
 
             return new ObservableCollection<Summary>(summaries);
-        }
-
-        public ObservableCollection<Clarification> Filter(string status, DateTime? startDate, DateTime? endDate, List<string> selectedModuleNames)
-        {
-            // Create a temporary list to hold filtered results
-            var filteredList = new List<Clarification>();
-
-            foreach (var clarification in Clarifications)
-            {
-                bool matchesStatus = string.IsNullOrEmpty(status) || clarification.Status.Equals(status, StringComparison.OrdinalIgnoreCase);
-                bool matchesDate = (!startDate.HasValue || clarification.Date >= startDate) &&
-                                   (!endDate.HasValue || clarification.Date <= endDate);
-                bool matchesModule = !selectedModuleNames.Any() ||
-                                     selectedModuleNames.Contains(clarification.Module); // Assuming `Clarification` has a `ModuleName` property
-
-                // If all conditions are met, add the clarification to the filtered list
-                if (matchesStatus || matchesDate || matchesModule)
-                {
-                    filteredList.Add(clarification);
-                }
-            }
-
-            // Return the filtered results as an ObservableCollection
-            return new ObservableCollection<Clarification>(filteredList);
         }
 
         public ObservableCollection<Models.Module> GetModules()
@@ -283,93 +268,165 @@ namespace ClarificationDetailsProject.ExcelRepo
             return DateTime.MinValue; // Return a default value if the input is not a valid date
         }
 
-        public void ExportClarificationsToExcel(ObservableCollection<Clarification> clarifications , string filename)
+        public void ExportClarificationsToExcel(ObservableCollection<Clarification> clarifications, string filename)
         {
-            // Create Excel application
-            Excel.Application excelApp = new Excel.Application();
-            excelApp.Visible = false; // Set to true if you want to see the Excel window
+            Excel.Application excelApp = null;
+            Excel.Workbook workbook = null;
+            Excel.Worksheet clarificationSheet = null;
 
-            // Create a new workbook
-            Excel.Workbook workbook = excelApp.Workbooks.Add();
-            Excel.Worksheet clarificationSheet = (Excel.Worksheet)workbook.Sheets[1];
-            clarificationSheet.Name = "Clarifications";
-
-            // Set headers
-            clarificationSheet.Cells[1, 1] = "Number";
-            clarificationSheet.Cells[1, 2] = "Date";
-            clarificationSheet.Cells[1, 3] = "Document Name";
-            clarificationSheet.Cells[1, 4] = "Module";
-            clarificationSheet.Cells[1, 5] = "Question";
-            clarificationSheet.Cells[1, 6] = "Answer";
-            clarificationSheet.Cells[1, 7] = "Status";
-
-            // Fill data
-            int row = 2;
-            foreach (var clarification in clarifications)
+            try
             {
-                clarificationSheet.Cells[row, 1] = clarification.Number;
-                clarificationSheet.Cells[row, 2] = clarification.Date.ToShortDateString();
-                clarificationSheet.Cells[row, 3] = clarification.DocumentName;
-                clarificationSheet.Cells[row, 4] = clarification.Module;
-                clarificationSheet.Cells[row, 5] = clarification.Question;
-                clarificationSheet.Cells[row, 6] = clarification.Answer;
-                clarificationSheet.Cells[row, 7] = clarification.Status;
-                row++;
+                // Initialize Excel application
+                excelApp = new Excel.Application();
+                excelApp.Visible = false;
+
+                // Create a new workbook and worksheet
+                workbook = excelApp.Workbooks.Add();
+                clarificationSheet = (Excel.Worksheet)workbook.Sheets[1];
+                clarificationSheet.Name = "Clarifications";
+
+                // Set headers
+                clarificationSheet.Cells[1, 1] = "Number";
+                clarificationSheet.Cells[1, 2] = "Date";
+                clarificationSheet.Cells[1, 3] = "Document Name";
+                clarificationSheet.Cells[1, 4] = "Module";
+                clarificationSheet.Cells[1, 5] = "Question";
+                clarificationSheet.Cells[1, 6] = "Answer";
+                clarificationSheet.Cells[1, 7] = "Status";
+
+                // Fill data
+                int row = 2;
+                foreach (var clarification in clarifications)
+                {
+                    clarificationSheet.Cells[row, 1] = clarification.Number;
+                    clarificationSheet.Cells[row, 2] = clarification.Date.ToShortDateString();
+                    clarificationSheet.Cells[row, 3] = clarification.DocumentName;
+                    clarificationSheet.Cells[row, 4] = clarification.Module;
+                    clarificationSheet.Cells[row, 5] = clarification.Question;
+                    clarificationSheet.Cells[row, 6] = clarification.Answer;
+                    clarificationSheet.Cells[row, 7] = clarification.Status;
+                    row++;
+                }
+
+                // Save the workbook
+                workbook.SaveAs(filename);
             }
-
-            // Save and close the workbook
-            workbook.SaveAs(filename);
-            workbook.Close();
-            excelApp.Quit();
-
-            // Cleanup
-            Marshal.ReleaseComObject(clarificationSheet);
-            Marshal.ReleaseComObject(workbook);
-            Marshal.ReleaseComObject(excelApp);
+            catch (COMException)
+            {
+                // Handle Excel-related exceptions
+                throw;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Handle permission errors for file access
+                throw;
+            }
+            catch (Exception)
+            {
+                // General exception handler for other types of errors
+                throw;
+            }
+            finally
+            {
+                // Cleanup: Close and release Excel objects, even if an error occurred
+                if (workbook != null)
+                {
+                    workbook.Close(false);
+                    Marshal.ReleaseComObject(workbook);
+                }
+                if (excelApp != null)
+                {
+                    excelApp.Quit();
+                    Marshal.ReleaseComObject(excelApp);
+                }
+                if (clarificationSheet != null)
+                {
+                    Marshal.ReleaseComObject(clarificationSheet);
+                }
+            }
         }
+
 
         public void ExportSummaryToExcel(ObservableCollection<Summary> summaries, string filename)
         {
-            // Create Excel application
-            Excel.Application excelApp = new Excel.Application();
-            excelApp.Visible = false; // Set to true if you want to see the Excel window
+            Excel.Application excelApp = null;
+            Excel.Workbook workbook = null;
+            Excel.Worksheet summarySheet = null;
 
-            // Create a new workbook
-            Excel.Workbook workbook = excelApp.Workbooks.Add();
-            Excel.Worksheet summarySheet = (Excel.Worksheet)workbook.Sheets[1];
-            summarySheet.Name = "Summary";
-
-            // Set headers
-            summarySheet.Cells[1, 1] = "Module";
-            summarySheet.Cells[1, 2] = "Closed";
-            summarySheet.Cells[1, 3] = "Open";
-            summarySheet.Cells[1, 4] = "On Hold";
-            summarySheet.Cells[1, 5] = "Pending";
-            summarySheet.Cells[1, 6] = "Total";
-
-            // Fill data
-            int row = 2;
-            foreach (var summary in summaries)
+            try
             {
-                summarySheet.Cells[row, 1] = summary.Module;
-                summarySheet.Cells[row, 2] = summary.Closed;
-                summarySheet.Cells[row, 3] = summary.Open;
-                summarySheet.Cells[row, 4] = summary.OnHold;
-                summarySheet.Cells[row, 5] = summary.Pending;
-                summarySheet.Cells[row, 6] = summary.Total;
-                row++;
+                // Initialize Excel application
+                excelApp = new Excel.Application();
+                excelApp.Visible = false;
+
+                // Create workbook and worksheet
+                workbook = excelApp.Workbooks.Add();
+                summarySheet = (Excel.Worksheet)workbook.Sheets[1];
+                summarySheet.Name = "Summary";
+
+                // Set headers
+                summarySheet.Cells[1, 1] = "Module";
+                summarySheet.Cells[1, 2] = "Closed";
+                summarySheet.Cells[1, 3] = "Open";
+                summarySheet.Cells[1, 4] = "On Hold";
+                summarySheet.Cells[1, 5] = "Pending";
+                summarySheet.Cells[1, 6] = "Total";
+
+                // Fill data
+                int row = 2;
+                foreach (var summary in summaries)
+                {
+                    summarySheet.Cells[row, 1] = summary.Module;
+                    summarySheet.Cells[row, 2] = summary.Closed;
+                    summarySheet.Cells[row, 3] = summary.Open;
+                    summarySheet.Cells[row, 4] = summary.OnHold;
+                    summarySheet.Cells[row, 5] = summary.Pending;
+                    summarySheet.Cells[row, 6] = summary.Total;
+                    row++;
+                }
+
+                // Save and close workbook
+                workbook.SaveAs(filename);
             }
-
-            // Save and close the workbook
-            workbook.SaveAs(filename);
-            workbook.Close();
-            excelApp.Quit();
-
-            // Cleanup
-            Marshal.ReleaseComObject(summarySheet);
-            Marshal.ReleaseComObject(workbook);
-            Marshal.ReleaseComObject(excelApp);
+            catch (COMException)
+            {
+                
+                throw; // re-throw to allow the caller to handle it
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw; // re-throw to allow the caller to handle it
+            }
+            catch (Exception)
+            {
+                throw; // re-throw to allow the caller to handle it
+            }
+            finally
+            {
+                // Cleanup COM objects
+                if (summarySheet != null)
+                {
+                    Marshal.ReleaseComObject(summarySheet);
+                }
+                if (workbook != null)
+                {
+                    workbook.Close();
+                }
+                if (workbook != null)
+                {
+                    Marshal.ReleaseComObject(workbook);
+                }
+                if (excelApp != null)
+                {
+                    excelApp.Quit();
+                }
+                if (excelApp != null)
+                {
+                    Marshal.ReleaseComObject(excelApp);
+                }
+            }
         }
+
     }
 }
 
