@@ -172,8 +172,8 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
-        private DateTime filterFromDate;
-        public DateTime FilterFromDate
+        private DateTime? filterFromDate;
+        public DateTime? FilterFromDate
         {
             get
             {
@@ -187,8 +187,8 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
-        private DateTime filterToDate;
-        public DateTime FilterToDate
+        private DateTime? filterToDate;
+        public DateTime? FilterToDate
         {
             get
             {
@@ -266,10 +266,14 @@ namespace ClarificationDetailsProject.ViewModels
             };
 
             Summaries = new ObservableCollection<Summary>();
-            filteredClarifications = new ObservableCollection<Clarification>();
+            FilteredClarifications = new ObservableCollection<Clarification>();
+            FilterFromDate = null;
+            FilterToDate = null;
             TempClarifications = new ObservableCollection<Clarification>();
             Modules = new ObservableCollection<Models.Module>();
             selectedModules = new List<string>();
+            SelectedTab = "Details";
+            
             buttonText = "Show Details";
         }
 
@@ -371,6 +375,8 @@ namespace ClarificationDetailsProject.ViewModels
                                      clarification.Status.Equals(FilterStatus, StringComparison.OrdinalIgnoreCase) ||
                                      FilterStatus.Equals("All", StringComparison.OrdinalIgnoreCase);
                 bool matchesModule = !selectedModules.Any() || selectedModules.Contains(clarification.Module);
+                bool matchesDate = (FilterFromDate == null || clarification.Date >= FilterFromDate) &&
+                                   (FilterToDate == null || clarification.Date <= FilterToDate);
 
                 // Check if it matches search criteria if SearchText is not empty
                 bool matchesSearch = true;
@@ -386,7 +392,7 @@ namespace ClarificationDetailsProject.ViewModels
                 }
 
                 // If all conditions are met, add the clarification to the filtered list
-                if (matchesStatus && matchesModule && matchesSearch)
+                if (matchesStatus && matchesModule && matchesDate && matchesSearch)
                 {
                     filteredList.Add(clarification);
                 }
@@ -408,7 +414,12 @@ namespace ClarificationDetailsProject.ViewModels
         {
             IsFilterApplied = false;
             IsSearchApplied = false;
-            filteredClarifications.Clear();
+            this.IsAllChecked = false;
+            this.SearchText = string.Empty;
+            this.FilterFromDate = null;
+            this.FilterToDate = null;
+            this.FilterStatus = null;
+            FilteredClarifications.Clear();
             Clarifications.Clear();
             foreach (var item in TempClarifications)
             {
@@ -473,7 +484,6 @@ namespace ClarificationDetailsProject.ViewModels
                 MessageBox.Show($"Exported Successfully");
             }
         }
-
 
     }
 }
