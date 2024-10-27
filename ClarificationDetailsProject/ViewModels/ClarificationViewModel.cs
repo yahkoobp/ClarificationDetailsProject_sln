@@ -301,10 +301,10 @@ namespace ClarificationDetailsProject.ViewModels
             // Initialize properties with default values
             FilePath = string.Empty;
             Clarifications = new ObservableCollection<Clarification>
-        {
+            {
             new Clarification { Number = 1, Date = DateTime.Now, DocumentName = "Doc1", Question = "Question1", Answer = "Answer1", Status = "Pending" },
             new Clarification{ Number = 2, Date = DateTime.Now, DocumentName = "Doc2", Question = "Question2", Answer = "Answer2", Status = "Closed" }
-        };
+            };
             Summaries = new ObservableCollection<Summary>();
             FilteredClarifications = new ObservableCollection<Clarification>();
             FilterFromDate = null;

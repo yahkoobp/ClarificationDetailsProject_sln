@@ -47,8 +47,8 @@
                         <TextBlock Text="Modules: " VerticalAlignment="Center" Width="70"/>
                         <WrapPanel Orientation="Horizontal" Width="300">
                             <CheckBox Content="Select All" 
-              IsChecked="{Binding IsAllChecked, Mode=TwoWay}" />
-                            <ItemsControl ItemsSource="{Binding Modules}" Margin="10 0 0 0">
+              IsChecked="{Binding IsAllChecked, Mode=TwoWay}" Margin="10"/>
+                            <ItemsControl ItemsSource="{Binding Modules}" Margin="0 0 0 0">
                                 <ItemsControl.ItemsPanel>
                                     <!-- Set WrapPanel as the panel for ItemsControl items -->
                                     <ItemsPanelTemplate>
