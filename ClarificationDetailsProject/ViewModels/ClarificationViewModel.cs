@@ -47,7 +47,6 @@ namespace ClarificationDetailsProject.ViewModels
         private IRepo _repo = new ExcelDataRepo();
         private ObservableCollection<Clarification> clarifications;
         private ObservableCollection<Models.Module> modules;
-        private Clarification _selectedClarification;
         /// <summary>
         /// Indicates if a filter is currently applied.
         /// </summary>

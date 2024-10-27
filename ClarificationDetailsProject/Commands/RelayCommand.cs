@@ -1,4 +1,11 @@
-﻿using System;
+﻿// ----------------------------------------------------------------------------------------
+// Project Name: ClarificationDetailsProject
+// File Name: RelayCommand.cs
+// Description: Defines a class for executing commands
+// Author: Yahkoob P
+// Date: 27-10-2024
+// ----------------------------------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

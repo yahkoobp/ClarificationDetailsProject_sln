@@ -83,8 +83,9 @@ namespace ClarificationDetailsProject.ExcelRepo
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 throw;
             }
         }
@@ -202,20 +203,24 @@ namespace ClarificationDetailsProject.ExcelRepo
                     }
                 }
             }
-            catch (COMException comEx)
+            catch (COMException ex)
             {
-                throw new InvalidOperationException("An error occurred while interacting with Excel. Please check the file and try again.", comEx);
+                Logger.log.Error($"{ex.Message}");
+                throw new InvalidOperationException("An error occurred while interacting with Excel. Please check the file and try again.", ex);
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 throw;
             }
-            catch (UnauthorizedAccessException unauthEx)
+            catch (UnauthorizedAccessException ex)
             {
-                throw new InvalidOperationException("Access to the file is denied. Please check the file permissions and try again.", unauthEx);
+                Logger.log.Error($"{ex.Message}");
+                throw new InvalidOperationException("Access to the file is denied. Please check the file permissions and try again.", ex);
             }
             catch (Exception ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 throw new InvalidOperationException("An unexpected error occurred. Please try again or contact support.", ex);
             }
             finally
@@ -338,18 +343,21 @@ namespace ClarificationDetailsProject.ExcelRepo
                 // Save the workbook
                 workbook.SaveAs(filename);
             }
-            catch (COMException)
+            catch (COMException ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 // Handle Excel-related exceptions
                 throw;
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 // Handle permission errors for file access
                 throw;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 // General exception handler for other types of errors
                 throw;
             }
@@ -419,17 +427,19 @@ namespace ClarificationDetailsProject.ExcelRepo
                 // Save and close workbook
                 workbook.SaveAs(filename);
             }
-            catch (COMException)
+            catch (COMException ex)
             {
-                
+                Logger.log.Error($"{ex.Message}");
                 throw; // re-throw to allow the caller to handle it
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 throw; // re-throw to allow the caller to handle it
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.log.Error($"{ex.Message}");
                 throw; // re-throw to allow the caller to handle it
             }
             finally
