@@ -1,13 +1,10 @@
-﻿// Clarification.cs
-// 
-// This file contains the implementation of the Clarification class,
-// which represents a clarification request in the application. It 
-// encapsulates the properties of a clarification, such as its number, 
-// document name, module, status, date, question, and answer.
-// 
+﻿// ----------------------------------------------------------------------------------------
+// Project Name: ClarificationDetailsProject
+// File Name: Clarification.cs
+// Description: Defines a class for Clarification details
 // Author: Yahkoob P
-// Date: YYYY-MM-DD
-
+// Date: 27-10-2024
+// ----------------------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,22 +14,43 @@ using System.Threading.Tasks;
 namespace ClarificationDetailsProject.Models
 {
     /// <summary>
-    /// Represents a clarification request with its associated properties.
+    /// Represents a clarification record containing information such as document name, module, status, date, question, and answer.
     /// </summary>
-    /// <remarks>
-    /// This class is a data model that encapsulates the details of a 
-    /// clarification, including its identifier, document name, module, 
-    /// status, date, question, and answer. It is designed to be used 
-    /// throughout the application to represent clarification requests.
-    /// </remarks>
     public class Clarification
     {
+        /// <summary>
+        /// Gets or sets the unique identification number for the clarification.
+        /// </summary>
         public int Number { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the document associated with this clarification.
+        /// </summary>
         public string DocumentName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the module associated with this clarification.
+        /// </summary>
         public string Module { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current status of this clarification (e.g., Pending, Closed).
+        /// </summary>
         public string Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date of the clarification.
+        /// </summary>
         public DateTime Date { get; set; }
+
+        /// <summary>
+        /// Gets or sets the question or issue being clarified.
+        /// </summary>
         public string Question { get; set; }
+
+        /// <summary>
+        /// Gets or sets the answer or response to the clarification question.
+        /// </summary>
         public string Answer { get; set; }
     }
 }

@@ -54,6 +54,8 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="No" Binding="{Binding Number}" Width="80" 
                                 ElementStyle="{StaticResource CenteredCellStyle}" />
+                <DataGridTextColumn Header="Module" Binding="{Binding Module}" Width="120" 
+                ElementStyle="{StaticResource CenteredCellStyle}" />
                 <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat='{}{0:MM/dd/yyyy}'}" Width="100" 
                                 ElementStyle="{StaticResource CenteredCellStyle}" />
                 <DataGridTextColumn Header="Doc Name" Binding="{Binding DocumentName}" Width="150" 

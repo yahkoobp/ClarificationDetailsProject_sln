@@ -1,13 +1,10 @@
-﻿// ExcelRepo.cs
-// 
-// This file contains the implementation of the ExcelRepo class,
-// which is responsible for handling data operations related to
-// Excel files. It implements the IRepo interface and provides
-// methods for loading, filtering, and searching data within
-// Excel documents.
-// 
+﻿// ----------------------------------------------------------------------------------------
+// Project Name: ClarificationDetailsProject
+// File Name: ExcelDataRepo.cs
+// Description: Represents a repository for handling Excel data operations.
 // Author: Yahkoob P
-// Date: 2024-10-23
+// Date: 27-10-2024
+// ----------------------------------------------------------------------------------------
 
 using System;
 using System.Collections.Generic;
@@ -53,6 +50,12 @@ namespace ClarificationDetailsProject.ExcelRepo
             "status",
             "Remarks"
         };
+
+        /// <summary>
+        /// Validates the headers of an Excel worksheet against the expected headers.
+        /// </summary>
+        /// <param name="worksheet">The worksheet to validate.</param>
+        /// <returns>True if the headers match; otherwise, false.</returns>
         public bool IsValidExcelWorkBook(Excel.Worksheet worksheet)
         {
             try
@@ -86,6 +89,12 @@ namespace ClarificationDetailsProject.ExcelRepo
             }
         }
 
+        /// <summary>
+        /// Checks if the actual headers match the expected headers.
+        /// </summary>
+        /// <param name="expectedHeaders">The list of expected headers.</param>
+        /// <param name="actualHeaders">The list of actual headers from the worksheet.</param>
+        /// <returns>True if headers match; otherwise, false.</returns>
         private bool HeadersMatch(List<string> expectedHeaders, List<string> actualHeaders)
         {
             if (expectedHeaders.Count != actualHeaders.Count)
@@ -101,6 +110,11 @@ namespace ClarificationDetailsProject.ExcelRepo
             return true;
         }
 
+        /// <summary>
+        /// Asynchronously loads data from an Excel file into the Clarifications collection.
+        /// </summary>
+        /// <param name="filePath">The file path of the Excel document to load.</param>
+        /// <returns>A collection of Clarification objects loaded from the Excel file.</returns>
         public async Task<ObservableCollection<Clarification>> LoadDataAsync(string filePath)
         {
             Excel.Application excelApp = new Excel.Application();
@@ -183,7 +197,7 @@ namespace ClarificationDetailsProject.ExcelRepo
                     }
                     else
                     {
-                        MessageBox.Show($"Invalid headers in sheet '{worksheet.Name}'.");
+                        MessageBox.Show($"'{worksheet.Name}' is an invalid sheet press OK to continue");
                         //throw new InvalidOperationException($"Invalid headers in sheet '{worksheet.Name}'.");
                     }
                 }
@@ -223,7 +237,10 @@ namespace ClarificationDetailsProject.ExcelRepo
             return Clarifications;
         }
 
-
+        /// <summary>
+        /// Retrieves summaries of clarification data grouped by module.
+        /// </summary>
+        /// <returns>A collection of summary data grouped by module.</returns>
         public ObservableCollection<Summary> GetSummaries()
         {
             var summaries = from clarification in Clarifications
@@ -241,15 +258,20 @@ namespace ClarificationDetailsProject.ExcelRepo
             return new ObservableCollection<Summary>(summaries);
         }
 
+        /// <summary>
+        /// Retrieves the list of modules that have been processed from the Excel file.
+        /// </summary>
+        /// <returns>A collection of modules.</returns>
         public ObservableCollection<Models.Module> GetModules()
         {
             return Modules;
         }
-        public void Search(string text)
-        {
-            throw new NotImplementedException();
-        }
 
+        /// <summary>
+        /// Converts an Excel date value to a DateTime object.
+        /// </summary>
+        /// <param name="excelDate">The Excel date value.</param>
+        /// <returns>The converted DateTime object.</returns>
         private DateTime ConvertExcelDateToDateTime(object excelDate)
         {
             if (excelDate is double serialDate)
@@ -268,6 +290,11 @@ namespace ClarificationDetailsProject.ExcelRepo
             return DateTime.MinValue; // Return a default value if the input is not a valid date
         }
 
+        /// <summary>
+        /// Exports the clarification data to an Excel file.
+        /// </summary>
+        /// <param name="clarifications">The collection of clarifications to export.</param>
+        /// <param name="filename">The file name to save the Excel document as.</param>
         public void ExportClarificationsToExcel(ObservableCollection<Clarification> clarifications, string filename)
         {
             Excel.Application excelApp = null;
@@ -346,7 +373,11 @@ namespace ClarificationDetailsProject.ExcelRepo
             }
         }
 
-
+        /// <summary>
+        /// Exports the summary data to an Excel file.
+        /// </summary>
+        /// <param name="summaries">The collection of summaries to export.</param>
+        /// <param name="filename">The file name to save the Excel document as.</param>
         public void ExportSummaryToExcel(ObservableCollection<Summary> summaries, string filename)
         {
             Excel.Application excelApp = null;

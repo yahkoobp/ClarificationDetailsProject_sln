@@ -1,13 +1,14 @@
-﻿// ClarificationViewModel.cs
-// 
-// This file contains the implementation of the ClarificationViewModel class,
+﻿// ----------------------------------------------------------------------------------------
+// Project Name: ClarificationDetailsProject
+// File Name: ClarificationViewModel.cs
+// Description: This file contains the implementation of the ClarificationViewModel class,
 // which serves as a ViewModel for the Clarification Details feature in the 
 // application. It inherits from ViewModelBase and is responsible for 
 // managing the state and behavior of the user interface related to 
 // clarifications.
-// 
 // Author: Yahkoob P
-// Date: 2024-10-23
+// Date: 27-10-2024
+// ----------------------------------------------------------------------------------------
 
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ using Microsoft.Win32;
 using System.Web.UI;
 using System.Windows.Controls;
 using System.Security.Cryptography.X509Certificates;
+using System.Runtime.InteropServices;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -43,46 +45,65 @@ namespace ClarificationDetailsProject.ViewModels
     public class ClarificationViewModel : ViewModelBase
     {
         private IRepo _repo = new ExcelDataRepo();
-        private ObservableCollection<Clarification> _clarifications;
-        private ObservableCollection<Models.Module> _modules;
+        private ObservableCollection<Clarification> clarifications;
+        private ObservableCollection<Models.Module> modules;
         private Clarification _selectedClarification;
+        /// <summary>
+        /// Indicates if a filter is currently applied.
+        /// </summary>
         public bool IsFilterApplied { get; set; } = false;
+
+        /// <summary>
+        /// Indicates if a search is currently applied.
+        /// </summary>
         public bool IsSearchApplied { get; set; } = false;
+
+        /// <summary>
+        /// Indicates if data is currently loading.
+        /// </summary>
         public bool IsLoading { get; set; } = false;
 
+        /// <summary>
+        /// Collection of clarifications loaded from the data source.
+        /// </summary>
         public ObservableCollection<Clarification> Clarifications
         {
-            get { return _clarifications; }
+            get { return clarifications; }
             set
             {
-                _clarifications = value;
+                clarifications = value;
                 OnPropertyChanged(nameof(Clarifications));
-               
             }
         }
 
         private ObservableCollection<Summary> summaries;
+
+        /// <summary>
+        /// Collection of summaries generated based on loaded data.
+        /// </summary>
         public ObservableCollection<Summary> Summaries
         {
-            get
-            {
-                return summaries;
-            }
+            get { return summaries; }
             set
             {
                 summaries = value;
                 OnPropertyChanged(nameof(Summaries));
             }
         }
+
+        /// <summary>
+        /// Temporary collection to hold clarifications for filtering purposes.
+        /// </summary>
         public ObservableCollection<Clarification> TempClarifications { get; set; }
 
         private ObservableCollection<Clarification> filteredClarifications;
+
+        /// <summary>
+        /// Collection of clarifications filtered based on user-selected criteria.
+        /// </summary>
         public ObservableCollection<Clarification> FilteredClarifications
         {
-            get 
-            { 
-                return filteredClarifications; 
-            }
+            get { return filteredClarifications; }
             set
             {
                 filteredClarifications = value;
@@ -91,12 +112,13 @@ namespace ClarificationDetailsProject.ViewModels
         }
 
         private string filePath;
+
+        /// <summary>
+        /// Path to the selected file.
+        /// </summary>
         public string FilePath
         {
-            get
-            {
-                return filePath;
-            }
+            get { return filePath; }
             set
             {
                 filePath = value;
@@ -105,12 +127,13 @@ namespace ClarificationDetailsProject.ViewModels
         }
 
         private string fileName;
+
+        /// <summary>
+        /// Name of the selected file.
+        /// </summary>
         public string FileName
         {
-            get
-            {
-                return fileName;
-            }
+            get { return fileName; }
             set
             {
                 fileName = value;
@@ -118,18 +141,24 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
+        /// <summary>
+        /// Collection of modules available for filtering.
+        /// </summary>
         public ObservableCollection<Models.Module> Modules
         {
-            get { return _modules; }
+            get { return modules; }
             set
             {
-                _modules = value;
+                modules = value;
                 OnPropertyChanged(nameof(Modules));
             }
         }
 
-
         private List<string> selectedModules;
+
+        /// <summary>
+        /// List of selected module names used for filtering.
+        /// </summary>
         public List<string> SelectedModules
         {
             get { return selectedModules; }
@@ -140,14 +169,17 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
-        private bool _isAllChecked;
+        private bool isAllChecked;
 
+        /// <summary>
+        /// Indicates whether all modules are selected.
+        /// </summary>
         public bool IsAllChecked
         {
-            get => _isAllChecked;
+            get => isAllChecked;
             set
             {
-                _isAllChecked = value;
+                isAllChecked = value;
                 OnPropertyChanged(nameof(IsAllChecked));
 
                 foreach (var item in Modules)
@@ -157,52 +189,56 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
-        private string _filterStatus;
+        private string filterStatus;
+
+        /// <summary>
+        /// Status filter applied to the clarifications.
+        /// </summary>
         public string FilterStatus
         {
-            get
-            {
-                return _filterStatus;
-            }
+            get { return filterStatus; }
             set
             {
-                _filterStatus = value;
+                filterStatus = value;
                 OnPropertyChanged(nameof(FilterStatus));
-              
             }
         }
 
         private DateTime? filterFromDate;
+
+        /// <summary>
+        /// Start date for date filtering.
+        /// </summary>
         public DateTime? FilterFromDate
         {
-            get
-            {
-                return filterFromDate;
-            }
+            get { return filterFromDate; }
             set
             {
                 filterFromDate = value;
                 OnPropertyChanged(nameof(FilterFromDate));
-
             }
         }
 
         private DateTime? filterToDate;
+
+        /// <summary>
+        /// End date for date filtering.
+        /// </summary>
         public DateTime? FilterToDate
         {
-            get
-            {
-                return filterToDate;
-            }
+            get { return filterToDate; }
             set
             {
                 filterToDate = value;
                 OnPropertyChanged(nameof(FilterToDate));
-
             }
         }
 
         private object _selectedTab;
+
+        /// <summary>
+        /// Currently selected tab (Details or Summary).
+        /// </summary>
         public object SelectedTab
         {
             get => _selectedTab;
@@ -213,27 +249,30 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
-        private string _searchText;
+        private string searchText;
+
+        /// <summary>
+        /// Text input for searching clarifications.
+        /// </summary>
         public string SearchText
         {
-            get 
+            get { return searchText; }
+            set
             {
-                return _searchText; 
-            }
-            set 
-            {
-                _searchText = value; 
-                OnPropertyChanged(nameof(SearchText)); ApplyFilters(); 
+                searchText = value;
+                OnPropertyChanged(nameof(SearchText));
+                ApplyFilters();
             }
         }
 
         private string buttonText;
+
+        /// <summary>
+        /// Text displayed on the action button.
+        /// </summary>
         public string ButtonText
         {
-            get
-            {
-                return buttonText;
-            }
+            get { return buttonText; }
             set
             {
                 buttonText = value;
@@ -241,15 +280,16 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
-        // Command for loading Excel
+        // Commands for various actions
         public ICommand LoadExcelCommand { get; }
         public ICommand ShowDialogCommand { get; }
-
         public ICommand ApplyFilterCommand { get; }
-
         public ICommand ResetFilterCommand { get; }
         public ICommand ExportToExcelCommand { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClarificationViewModel"/> class.
+        /// </summary>
         public ClarificationViewModel()
         {
             LoadExcelCommand = new RelayCommand(LoadExcelAsync);
@@ -258,13 +298,13 @@ namespace ClarificationDetailsProject.ViewModels
             ResetFilterCommand = new RelayCommand(ResetFilter);
             ExportToExcelCommand = new RelayCommand(ExportToExcel);
 
-            this.FilePath = string.Empty;
-            Clarifications = new ObservableCollection<Clarification>()
-            {
-                 new Clarification { Number = 1, Date = DateTime.Now, DocumentName = "Doc1", Question = "Question1", Answer = "Answer1", Status = "Pending" },
+            // Initialize properties with default values
+            FilePath = string.Empty;
+            Clarifications = new ObservableCollection<Clarification>
+        {
+            new Clarification { Number = 1, Date = DateTime.Now, DocumentName = "Doc1", Question = "Question1", Answer = "Answer1", Status = "Pending" },
             new Clarification{ Number = 2, Date = DateTime.Now, DocumentName = "Doc2", Question = "Question2", Answer = "Answer2", Status = "Closed" }
-            };
-
+        };
             Summaries = new ObservableCollection<Summary>();
             FilteredClarifications = new ObservableCollection<Clarification>();
             FilterFromDate = null;
@@ -273,9 +313,12 @@ namespace ClarificationDetailsProject.ViewModels
             Modules = new ObservableCollection<Models.Module>();
             selectedModules = new List<string>();
             SelectedTab = "Details";
-            
             buttonText = "Show Details";
         }
+
+        /// <summary>
+        /// Opens a file dialog for selecting an Excel file.
+        /// </summary>
 
         public void ShowDialog()
         {
@@ -288,6 +331,11 @@ namespace ClarificationDetailsProject.ViewModels
                 this.FileName = Path.GetFileName(FilePath);
             }
         }
+
+
+        /// <summary>
+        /// Loads clarifications data from the specified Excel file asynchronously.
+        /// </summary>
         public async void LoadExcelAsync()
         {
             if (string.IsNullOrWhiteSpace(FilePath))
@@ -347,6 +395,9 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
+        /// <summary>
+        /// Updates the selected modules based on user selection.
+        /// </summary>
         public void UpdateSelectedModules()
         {
             var SelectedModules = Modules.Where(m => m.IsChecked).ToList(); // Get selected modules
@@ -357,6 +408,9 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
+        /// <summary>
+        /// Applies filters based on user-selected criteria.
+        /// </summary>
         public void ApplyFilters()
         {
             IsFilterApplied = true;
@@ -410,15 +464,19 @@ namespace ClarificationDetailsProject.ViewModels
                 Clarifications.Add(clarification);
             }
         }
+
+        /// <summary>
+        /// Resets all filters and clears filtered data.
+        /// </summary>
         public void ResetFilter()
         {
             IsFilterApplied = false;
             IsSearchApplied = false;
-            this.IsAllChecked = false;
-            this.SearchText = string.Empty;
-            this.FilterFromDate = null;
-            this.FilterToDate = null;
-            this.FilterStatus = null;
+            IsAllChecked = false;
+            SearchText = string.Empty;
+            FilterFromDate = null;
+            FilterToDate = null;
+            FilterStatus = null;
             FilteredClarifications.Clear();
             Clarifications.Clear();
             foreach (var item in TempClarifications)
@@ -427,6 +485,9 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
+        /// <summary>
+        /// Exports data to Excel based on the selected tab.
+        /// </summary>
         public void ExportToExcel()
         {
             if (SelectedTab is TabItem tabItem)
@@ -442,6 +503,9 @@ namespace ClarificationDetailsProject.ViewModels
             }
         }
 
+        /// <summary>
+        /// Exports the clarifications data to an Excel file.
+        /// </summary>
         public void ExportClarificationToExcel()
         {
             // Open a SaveFileDialog to specify the file path
@@ -456,18 +520,55 @@ namespace ClarificationDetailsProject.ViewModels
             {
                 if (IsFilterApplied)
                 {
-                    _repo.ExportClarificationsToExcel(FilteredClarifications, saveFileDialog.FileName);
-                    MessageBox.Show($"Exported Successfully");
+                    try
+                    {
+                        _repo.ExportClarificationsToExcel(FilteredClarifications, saveFileDialog.FileName);
+                        MessageBox.Show($"Exported Successfully");
+                    }
+                    catch (COMException ex)
+                    {
+
+                        MessageBox.Show($"{ex.Message}");
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        MessageBox.Show($"{ex.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"{ex.Message}");
+                    }
+
                 }
                 else
                 {
-                    _repo.ExportClarificationsToExcel(Clarifications, saveFileDialog.FileName);
-                    MessageBox.Show($"Exported Successfully");
+                    try
+                    {
+                        _repo.ExportClarificationsToExcel(Clarifications, saveFileDialog.FileName);
+                        MessageBox.Show($"Exported Successfully");
+                    }
+                    catch (COMException ex)
+                    {
+
+                        MessageBox.Show($"{ex.Message}");
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        MessageBox.Show($"{ex.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"{ex.Message}");
+                    }
+
                 }
                 
             }
         }
 
+        /// <summary>
+        /// Exports the summaries data to an Excel file.
+        /// </summary>
         public void ExportSummaryToExcel()
         {
             // Open a SaveFileDialog to specify the file path
@@ -480,8 +581,24 @@ namespace ClarificationDetailsProject.ViewModels
 
             if (saveFileDialog.ShowDialog() == true)
             {
-                _repo.ExportSummaryToExcel(Summaries , saveFileDialog.FileName);
-                MessageBox.Show($"Exported Successfully");
+                try
+                {
+                    _repo.ExportSummaryToExcel(Summaries, saveFileDialog.FileName);
+                    MessageBox.Show($"Exported Successfully");
+                }
+                catch (COMException ex)
+                {
+
+                    MessageBox.Show($"{ex.Message}");
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show($"{ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}");
+                }
             }
         }
 
