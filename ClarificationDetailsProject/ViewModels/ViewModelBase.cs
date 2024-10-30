@@ -6,12 +6,7 @@
 // Author: Yahkoob P
 // Date: 27-10-2024
 // ----------------------------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -32,10 +27,7 @@ namespace ClarificationDetailsProject.ViewModels
         /// <param name="propertyName">Name of the property that changed.</param>
         public void OnPropertyChanged(string propertyName)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿// ----------------------------------------------------------------------------------------
-// Project Name: ClarificationDetailsProject
-// File Name: ExcelDataRepo.cs
-// Description: Represents a repository for handling Excel data operations.
-// Author: Yahkoob P
-// Date: 27-10-2024
+// Project Name  : ClarificationDetailsProject
+// File Name     : ExcelDataRepo.cs
+// Description   : Represents a repository for handling Excel data operations.
+// Author        : Yahkoob P
+// Date          : 27-10-2024
 // ----------------------------------------------------------------------------------------
 
 using System;
@@ -11,15 +11,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using ClarificationDetailsProject.Models;
 using ClarificationDetailsProject.Repo;
-using Microsoft.Office.Interop.Excel;
-using OfficeOpenXml;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ClarificationDetailsProject.ExcelRepo
@@ -198,7 +193,10 @@ namespace ClarificationDetailsProject.ExcelRepo
                     }
                     else
                     {
-                        MessageBox.Show($"'{worksheet.Name}' is an invalid sheet press OK to continue");
+                        MessageBox.Show(messageBoxText: $"'{worksheet.Name}' is an invalid sheet press OK to continue",
+                        caption: "Alert",
+                        button: MessageBoxButton.OK,
+                        icon: MessageBoxImage.Warning);
                         //throw new InvalidOperationException($"Invalid headers in sheet '{worksheet.Name}'.");
                     }
                 }
@@ -229,7 +227,7 @@ namespace ClarificationDetailsProject.ExcelRepo
                 if (workbook != null)
                 {
                     workbook.Close(false);
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                    Marshal.ReleaseComObject(workbook);
                 }
 
                 if (excelApp != null)

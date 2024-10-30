@@ -9,14 +9,10 @@
 // Author: Yahkoob P
 // Date: 27-10-2024
 // ----------------------------------------------------------------------------------------
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ClarificationDetailsProject.Commands;
 using ClarificationDetailsProject.Models;
 using System.Windows.Input;
@@ -24,12 +20,8 @@ using ClarificationDetailsProject.Repo;
 using ClarificationDetailsProject.ExcelRepo;
 using System.Windows;
 using System.IO;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Win32;
-using System.Web.UI;
 using System.Windows.Controls;
-using System.Security.Cryptography.X509Certificates;
 using System.Runtime.InteropServices;
 
 namespace ClarificationDetailsProject.ViewModels
@@ -339,7 +331,10 @@ namespace ClarificationDetailsProject.ViewModels
         {
             if (string.IsNullOrWhiteSpace(FilePath))
             {
-                MessageBox.Show("Please select a file");
+                MessageBox.Show(messageBoxText: "Please select a file",
+                caption: "Alert",
+                button: MessageBoxButton.OK,
+                icon: MessageBoxImage.Warning);
                 return;
             }
 
@@ -471,8 +466,7 @@ namespace ClarificationDetailsProject.ViewModels
         {
             IsFilterApplied = false;
             IsSearchApplied = false;
-            IsAllChecked = false;
-            SearchText = string.Empty;
+            IsAllChecked = false;            
             FilterFromDate = null;
             FilterToDate = null;
             FilterStatus = null;
@@ -482,6 +476,7 @@ namespace ClarificationDetailsProject.ViewModels
             {
                 Clarifications.Add(item);
             }
+            SearchText = null;
         }
 
         /// <summary>

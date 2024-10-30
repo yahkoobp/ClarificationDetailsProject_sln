@@ -6,10 +6,6 @@
 // Date: 27-10-2024
 // ----------------------------------------------------------------------------------------
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClarificationDetailsProject.Models
 {
