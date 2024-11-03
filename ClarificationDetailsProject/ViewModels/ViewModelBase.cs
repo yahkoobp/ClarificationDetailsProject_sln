@@ -1,7 +1,7 @@
 ﻿// ----------------------------------------------------------------------------------------
 // Project Name: ClarificationDetailsProject
 // File Name: ViewModelBase.cs
-// Description: // ViewModelBase class for implementing INotifyPropertyChanged functionality.
+// Description: ViewModelBase class for implementing INotifyPropertyChanged functionality.
 // Provides base property change notification mechanism for view models.
 // Author: Yahkoob P
 // Date: 27-10-2024

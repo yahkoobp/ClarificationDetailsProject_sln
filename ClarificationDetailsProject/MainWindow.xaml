@@ -46,7 +46,7 @@
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="Modules: " VerticalAlignment="Center" Width="70"/>
                         <WrapPanel Orientation="Horizontal" Width="300">
-                            <CheckBox Content="Select All" 
+                            <CheckBox x:Name="Modules" Content="Select All" 
               IsChecked="{Binding IsAllChecked, Mode=TwoWay}" Margin="10"/>
                             <ItemsControl ItemsSource="{Binding Modules}" Margin="0 0 0 0">
                                 <ItemsControl.ItemsPanel>
@@ -59,8 +59,8 @@
                                     <DataTemplate>
                                         <CheckBox Margin="10 0 0 0" Content="{Binding Name}" 
                           IsChecked="{Binding IsChecked, Mode=TwoWay}" 
-                          Checked="CheckBox_Checked"
-                          Unchecked="CheckBox_Unchecked"/>
+                          Checked="ModulesChecked"
+                          Unchecked="ModulesUnchecked"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -96,7 +96,7 @@
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="Search Conditions" FontWeight="Bold" Margin="10 10 0 0"/>
                     <StackPanel Orientation="Horizontal" Margin="10">
-                        <TextBlock Text="Search Text: " VerticalAlignment="Center" Width="60"/>
+                        <TextBlock Text="Search Text: " VerticalAlignment="Center" />
                         <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4"
                                  Text="{Binding SearchText}"/>
                         <Button Content="Search" Width="100" Margin="10 0 0 0" Command="{Binding ApplyFilterCommand}"/>

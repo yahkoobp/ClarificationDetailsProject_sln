@@ -31,7 +31,7 @@ namespace ClarificationDetailsProject.ExcelRepo
     {
         ObservableCollection<Clarification> Clarifications = new ObservableCollection<Clarification>();
         ObservableCollection<Models.Module> Modules = new ObservableCollection<Models.Module>();
-        private List<string> expectedHeaders = new List<string>() 
+        private readonly List<string> expectedHeaders = new List<string>() 
         {
             "No", 
             "Date",
@@ -186,14 +186,14 @@ namespace ClarificationDetailsProject.ExcelRepo
                                 }
                                 catch (Exception ex)
                                 {
-                                    throw new InvalidOperationException($"Error processing row {row} in worksheet '{worksheet.Name}'", ex);
+                                    throw new InvalidOperationException($"Error processing row {row} in worksheet '{worksheet.Name}'.", ex);
                                 }
                             }
                         });
                     }
                     else
                     {
-                        MessageBox.Show(messageBoxText: $"'{worksheet.Name}' is an invalid sheet press OK to continue",
+                        MessageBox.Show(messageBoxText: $"'{worksheet.Name}' is an invalid sheet press OK to continue.",
                         caption: "Alert",
                         button: MessageBoxButton.OK,
                         icon: MessageBoxImage.Warning);

@@ -9,20 +9,20 @@
 // Author: Yahkoob P
 // Date: 27-10-2024
 // ----------------------------------------------------------------------------------------
+using ClarificationDetailsProject.Commands;
+using ClarificationDetailsProject.ExcelRepo;
+using ClarificationDetailsProject.Models;
+using ClarificationDetailsProject.Repo;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using ClarificationDetailsProject.Commands;
-using ClarificationDetailsProject.Models;
-using System.Windows.Input;
-using ClarificationDetailsProject.Repo;
-using ClarificationDetailsProject.ExcelRepo;
-using System.Windows;
 using System.IO;
-using Microsoft.Win32;
-using System.Windows.Controls;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace ClarificationDetailsProject.ViewModels
 {
@@ -36,6 +36,11 @@ namespace ClarificationDetailsProject.ViewModels
     /// </remarks>
     public class ClarificationViewModel : ViewModelBase
     {
+        private const string successfullMessageBoxText = "Exported successfully.";
+        private const string butttonText = "Show Details";
+        private const string detailsTab = "Details";
+        private const string summaryTab = "Summary";
+        private const string loadingText = "Loading...";
         private IRepo _repo = new ExcelDataRepo();
         private ObservableCollection<Clarification> clarifications;
         private ObservableCollection<Models.Module> modules;
@@ -303,8 +308,8 @@ namespace ClarificationDetailsProject.ViewModels
             TempClarifications = new ObservableCollection<Clarification>();
             Modules = new ObservableCollection<Models.Module>();
             selectedModules = new List<string>();
-            SelectedTab = "Details";
-            buttonText = "Show Details";
+            SelectedTab = detailsTab;
+            buttonText = butttonText;
         }
 
         /// <summary>
@@ -313,8 +318,10 @@ namespace ClarificationDetailsProject.ViewModels
 
         public void ShowDialog()
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.Filter = "Excel Files (*.xlsx)|*.xlsx";
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx"
+            };
 
             if (dialog.ShowDialog() == true)
             {
@@ -339,7 +346,7 @@ namespace ClarificationDetailsProject.ViewModels
             }
 
             IsLoading = true;
-            ButtonText = "Loading...";
+            ButtonText = loadingText;
             string filePath = this.FilePath;
 
             try
@@ -385,7 +392,7 @@ namespace ClarificationDetailsProject.ViewModels
             {
                 // Ensure loading state is reset
                 IsLoading = false;
-                ButtonText = "Show Details";
+                ButtonText = butttonText;
             }
         }
 
@@ -486,11 +493,11 @@ namespace ClarificationDetailsProject.ViewModels
         {
             if (SelectedTab is TabItem tabItem)
             {
-                if (tabItem.Header.ToString() == "Details")
+                if (tabItem.Header.ToString() == detailsTab)
                 {
                     ExportClarificationToExcel();
                 }
-                else if (tabItem.Header.ToString() == "Summary")
+                else if (tabItem.Header.ToString() == summaryTab)
                 {
                     ExportSummaryToExcel();
                 }
@@ -502,6 +509,15 @@ namespace ClarificationDetailsProject.ViewModels
         /// </summary>
         public void ExportClarificationToExcel()
         {
+            //check if there is no clarifications
+            if(filteredClarifications.Count == 0 || clarifications.Count == 0)
+            {
+                MessageBox.Show(messageBoxText: "No clarifications to export.",
+                caption: "Alert",
+                button: MessageBoxButton.OK,
+                icon: MessageBoxImage.Warning);
+                return;
+            }
             // Open a SaveFileDialog to specify the file path
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
@@ -517,7 +533,7 @@ namespace ClarificationDetailsProject.ViewModels
                     try
                     {
                         _repo.ExportClarificationsToExcel(FilteredClarifications, saveFileDialog.FileName);
-                        MessageBox.Show($"Exported Successfully");
+                        MessageBox.Show(successfullMessageBoxText);
                     }
                     catch (COMException ex)
                     {
@@ -539,7 +555,7 @@ namespace ClarificationDetailsProject.ViewModels
                     try
                     {
                         _repo.ExportClarificationsToExcel(Clarifications, saveFileDialog.FileName);
-                        MessageBox.Show($"Exported Successfully");
+                        MessageBox.Show(successfullMessageBoxText);
                     }
                     catch (COMException ex)
                     {
@@ -565,6 +581,15 @@ namespace ClarificationDetailsProject.ViewModels
         /// </summary>
         public void ExportSummaryToExcel()
         {
+            //check if there is no summmaries to export
+            if (Summaries.Count == 0)
+            {
+                MessageBox.Show(messageBoxText: "No summaries to export.",
+                caption: "Alert",
+                button: MessageBoxButton.OK,
+                icon: MessageBoxImage.Warning);
+                return;
+            }
             // Open a SaveFileDialog to specify the file path
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
@@ -578,7 +603,7 @@ namespace ClarificationDetailsProject.ViewModels
                 try
                 {
                     _repo.ExportSummaryToExcel(Summaries, saveFileDialog.FileName);
-                    MessageBox.Show($"Exported Successfully");
+                    MessageBox.Show(successfullMessageBoxText);
                 }
                 catch (COMException ex)
                 {

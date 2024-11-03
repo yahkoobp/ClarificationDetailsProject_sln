@@ -1,14 +1,31 @@
-﻿using System.Windows;
+﻿// ----------------------------------------------------------------------------------------
+// Project Name  : ClarificationDetailsProject
+// File Name     : MainWindow.xaml.cs
+// Description   : Represents the mainwindow class
+// Author        : Yahkoob P
+// Date          : 27-10-2024
+// ----------------------------------------------------------------------------------------
+
+using System.Windows;
 using ClarificationDetailsProject.ViewModels;
 
 namespace ClarificationDetailsProject
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Main entry point for the application UI.
+    /// Defines interaction logic for the main window and binds to the <see cref="ClarificationViewModel"/> for data operations.
     /// </summary>
     public partial class MainWindow : Window
     {
-        ClarificationViewModel ViewModel { get; set; } = null;      
+        /// <summary>
+        /// Gets or sets the ViewModel for managing data in the main window.
+        /// </summary>
+        private ClarificationViewModel ViewModel { get; set; } = null;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// Sets the DataContext to the <see cref="ClarificationViewModel"/>.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
@@ -16,12 +33,22 @@ namespace ClarificationDetailsProject
             this.DataContext = ViewModel;
         }
 
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Handles the CheckBox Checked event and updates the selected modules in the ViewModel.
+        /// </summary>
+        /// <param name="sender">The CheckBox that was checked.</param>
+        /// <param name="e">Event data for the Checked event.</param>
+        private void ModulesChecked(object sender, RoutedEventArgs e)
         {
             ViewModel.UpdateSelectedModules();
         }
 
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Handles the CheckBox Unchecked event and updates the selected modules in the ViewModel.
+        /// </summary>
+        /// <param name="sender">The CheckBox that was unchecked.</param>
+        /// <param name="e">Event data for the Unchecked event.</param>
+        private void ModulesUnchecked(object sender, RoutedEventArgs e)
         {
             ViewModel.UpdateSelectedModules();
         }
