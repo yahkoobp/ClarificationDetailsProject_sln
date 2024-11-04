@@ -21,7 +21,7 @@
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="FilePath: " VerticalAlignment="Center" Width="60" />
                         <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4" IsEnabled="False" Text="{Binding FilePath , Mode=TwoWay}"/>
-                        <Button Content="..." Width="100" Command="{Binding ShowDialogCommand}" Height="30" Margin="10 0 0 0">
+                        <Button Content="..." Command="{Binding ShowDialogCommand}" Margin="10 0 0 0">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border Background="teal" CornerRadius="3" Padding="5">
@@ -34,7 +34,7 @@
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <TextBlock Text="FileName: " VerticalAlignment="Center" Width="60"/>
                         <TextBox Width="400" Height="30" Margin="10 0 0 0" Padding="4 4 4 4" IsEnabled="False" Text="{Binding FileName , Mode=TwoWay}"/>
-                        <Button Content="{Binding ButtonText , Mode=TwoWay}" Width="100" Margin="10 0 0 0" Command="{Binding LoadExcelCommand}"/>
+                        <Button Content="{Binding ButtonText , Mode=TwoWay}" Margin="10 0 0 0" Command="{Binding LoadExcelCommand}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal"></StackPanel>
                 </StackPanel>
@@ -127,7 +127,7 @@
                             <controls:SummaryGridControl Items="{Binding Summaries}"/>
                         </TabItem>
                     </TabControl>
-                    <Button Content="Export" Width="200" Height="30" Background="Teal" Foreground="white" FontWeight="Bold" HorizontalAlignment="Right" Margin="10"
+                    <Button Content="Export" HorizontalAlignment="Right" Margin="10"
                             Command="{Binding ExportToExcelCommand}"/>
                 </StackPanel>
             </Border>
