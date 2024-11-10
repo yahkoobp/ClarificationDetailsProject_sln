@@ -29,8 +29,8 @@ namespace ClarificationDetailsProject.ExcelRepo
     /// </remarks>
     public class ExcelDataRepo : IRepo
     {
-        ObservableCollection<Clarification> Clarifications = new ObservableCollection<Clarification>();
-        ObservableCollection<Models.Module> Modules = new ObservableCollection<Models.Module>();
+        private ObservableCollection<Clarification> Clarifications = new ObservableCollection<Clarification>();
+        private ObservableCollection<Models.Module> Modules = new ObservableCollection<Models.Module>();
         private readonly List<string> expectedHeaders = new List<string>() 
         {
             "No", 
