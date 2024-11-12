@@ -47,7 +47,7 @@ namespace ClarificationDetailsProject.ViewModels
         //Constant to store loading text
         private const string loadingText = "Loading...";
 
-        private IRepo _repo = new ExcelDataRepo();
+        private IRepo repo = new ExcelDataRepo();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClarificationViewModel"/> class.
@@ -333,6 +333,7 @@ namespace ClarificationDetailsProject.ViewModels
         /// </summary>
         private async void LoadExcelAsync()
         {
+           
             if (string.IsNullOrWhiteSpace(FilePath))
             {
                 MessageBox.Show(messageBoxText: "Please select a file.",
@@ -353,29 +354,12 @@ namespace ClarificationDetailsProject.ViewModels
                 TempClarifications.Clear();
                 Summaries.Clear();
                 Modules.Clear();
-
                 // Load data asynchronously
-                var data = await _repo.LoadDataAsync(filePath);
-
-                // Add new data to Clarifications and TempClarifications
-                foreach (var item in data)
-                {
-                    Clarifications.Add(item);
-                    TempClarifications.Add(item);
-                }
-
+                Clarifications = await repo.LoadDataAsync(filePath);
+                TempClarifications = Clarifications;
                 // Load summaries and modules
-                var summaries = _repo.GetSummaries();
-                foreach (var summary in summaries)
-                {
-                    Summaries.Add(summary);
-                }
-
-                var modules = _repo.GetModules();
-                foreach (var item in modules)
-                {
-                    Modules.Add(item);
-                }
+                Summaries = repo.GetSummaries();
+                Modules = repo.GetModules();
             }
             catch (InvalidOperationException ex)
             {
@@ -415,7 +399,7 @@ namespace ClarificationDetailsProject.ViewModels
             IsSearchApplied = !string.IsNullOrWhiteSpace(SearchText); // Check if search is needed
 
             var filteredList = new ObservableCollection<Clarification>();
-            FilteredClarifications.Clear();
+            //FilteredClarifications.Clear();
 
             // Convert SearchText to lowercase for case-insensitive search if applicable
             var searchTextLower = SearchText?.ToLower();
@@ -451,18 +435,9 @@ namespace ClarificationDetailsProject.ViewModels
             }
 
             // Update the collections
-            foreach (var item in filteredList)
-            {
-                FilteredClarifications.Add(item);
-            }
-
-            Clarifications.Clear();
-            foreach (var clarification in filteredList)
-            {
-                Clarifications.Add(clarification);
-            }
+            FilteredClarifications = filteredList;
+            Clarifications = filteredList;
         }
-
         /// <summary>
         /// Resets all filters and clears filtered data.
         /// </summary>
@@ -475,11 +450,7 @@ namespace ClarificationDetailsProject.ViewModels
             FilterToDate = null;
             FilterStatus = null;
             FilteredClarifications.Clear();
-            Clarifications.Clear();
-            foreach (var item in TempClarifications)
-            {
-                Clarifications.Add(item);
-            }
+            Clarifications = TempClarifications;
             SearchText = null;
         }
 
@@ -529,7 +500,7 @@ namespace ClarificationDetailsProject.ViewModels
                 {
                     try
                     {
-                        _repo.ExportClarificationsToExcel(FilteredClarifications, saveFileDialog.FileName);
+                        repo.ExportClarificationsToExcel(FilteredClarifications, saveFileDialog.FileName);
                         MessageBox.Show(successfullMessageBoxText ,
                         caption: "Success",
                         button: MessageBoxButton.OK,
@@ -548,13 +519,12 @@ namespace ClarificationDetailsProject.ViewModels
                     {
                         MessageBox.Show($"{ex.Message}");
                     }
-
                 }
                 else
                 {
                     try
                     {
-                        _repo.ExportClarificationsToExcel(Clarifications, saveFileDialog.FileName);
+                        repo.ExportClarificationsToExcel(Clarifications, saveFileDialog.FileName);
                         MessageBox.Show(successfullMessageBoxText,
                         caption: "Success",
                         button: MessageBoxButton.OK,
@@ -573,7 +543,6 @@ namespace ClarificationDetailsProject.ViewModels
                     {
                         MessageBox.Show($"{ex.Message}");
                     }
-
                 }
                 
             }
@@ -605,7 +574,7 @@ namespace ClarificationDetailsProject.ViewModels
             {
                 try
                 {
-                    _repo.ExportSummaryToExcel(Summaries, saveFileDialog.FileName);
+                    repo.ExportSummaryToExcel(Summaries, saveFileDialog.FileName);
                     MessageBox.Show(successfullMessageBoxText,
                     caption: "Success",
                     button: MessageBoxButton.OK,

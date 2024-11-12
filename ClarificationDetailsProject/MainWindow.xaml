@@ -103,11 +103,11 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
-            
+
             <Border Grid.Row="3" BorderBrush="gray" BorderThickness="1" Margin="0 10 0 0">
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" Margin="10 10 0 0">
-                       <TextBlock Text="Clarification Count :" FontWeight="Bold" />
+                        <TextBlock Text="Clarification Count :" FontWeight="Bold" />
                         <TextBlock>
                             <TextBlock.Text>
                                 <MultiBinding StringFormat=" {0}/{1}">
@@ -131,7 +131,6 @@
                             Command="{Binding ExportToExcelCommand}"/>
                 </StackPanel>
             </Border>
-
         </Grid>
     </ScrollViewer>
 </Window>
