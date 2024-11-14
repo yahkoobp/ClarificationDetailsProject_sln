@@ -137,6 +137,7 @@ namespace PPTMerger
                 // Create a new PresentationPart for the merged presentation
                 PresentationPart mergedPresentationPart = mergedPresentation.AddPresentationPart();
                 mergedPresentationPart.Presentation = new Presentation();
+                mergedPresentationPart.Presentation.SlideIdList = new SlideIdList();
 
                 // A dictionary to track already copied SlideMasterParts and SlideLayoutParts
                 Dictionary<string, SlideMasterPart> slideMasterParts = new Dictionary<string, SlideMasterPart>();
@@ -151,34 +152,43 @@ namespace PPTMerger
                         // Copy SlideMasters to merged presentation
                         foreach (SlideMasterPart masterPart in sourcePresentationPart.SlideMasterParts)
                         {
-                            // Add master slide part to merged presentation and track it
-                            SlideMasterPart newMasterPart = mergedPresentationPart.AddPart(masterPart);
-                            slideMasterParts[masterPart.GetIdOfPart(masterPart)] = newMasterPart;
-
-                            // Copy SlideLayouts associated with the SlideMasterPart
-                            foreach (SlideLayoutPart layoutPart in masterPart.SlideLayoutParts)
+                            // Check if the SlideMasterPart is already added to avoid duplicates
+                            if (!slideMasterParts.ContainsKey(masterPart.Uri.ToString()))
                             {
-                                // Add slide layout part to merged presentation and track it
-                                SlideLayoutPart newLayoutPart = mergedPresentationPart.AddPart(layoutPart);
-                                slideLayoutParts[layoutPart.GetIdOfPart(layoutPart)] = newLayoutPart;
+                                SlideMasterPart newMasterPart = mergedPresentationPart.AddNewPart<SlideMasterPart>();
+                                newMasterPart.FeedData(masterPart.GetStream()); // Copy master content
+                                slideMasterParts[masterPart.Uri.ToString()] = newMasterPart;
+
+                                // Copy SlideLayouts associated with the SlideMasterPart
+                                foreach (SlideLayoutPart layoutPart in masterPart.SlideLayoutParts)
+                                {
+                                    // Check if layout is already copied
+                                    if (!slideLayoutParts.ContainsKey(layoutPart.Uri.ToString()))
+                                    {
+                                        SlideLayoutPart newLayoutPart = newMasterPart.AddNewPart<SlideLayoutPart>();
+                                        newLayoutPart.FeedData(layoutPart.GetStream());
+                                        slideLayoutParts[layoutPart.Uri.ToString()] = newLayoutPart;
+                                    }
+                                }
                             }
                         }
 
                         // Add slides from source presentation
                         foreach (SlideId slideId in sourcePresentationPart.Presentation.SlideIdList)
                         {
-                            // Get the SlidePart of the current slide
                             SlidePart sourceSlidePart = (SlidePart)sourcePresentationPart.GetPartById(slideId.RelationshipId);
 
-                            // Create a new SlidePart in the merged presentation
-                            SlidePart newSlidePart = mergedPresentationPart.AddPart(sourceSlidePart);
+                            // Create a new SlidePart in the merged presentation and copy the slide content
+                            SlidePart newSlidePart = mergedPresentationPart.AddNewPart<SlidePart>();
+                            newSlidePart.FeedData(sourceSlidePart.GetStream());
 
-                            // Add the slide to the merged presentation's SlideIdList with a new ID
-                            SlideId newSlideId = mergedPresentationPart.Presentation.SlideIdList.AppendChild(new SlideId());
-                            newSlideId.Id = (UInt32Value)(mergedPresentationPart.Presentation.SlideIdList.Count() + 256U);
-
-                            // Ensure the correct RelationshipId is set for the new slide
-                            newSlideId.RelationshipId = mergedPresentationPart.GetIdOfPart(newSlidePart);
+                            // Add the slide to the merged presentation's SlideIdList with a new unique ID
+                            SlideId newSlideId = new SlideId
+                            {
+                                Id = (UInt32Value)(mergedPresentationPart.Presentation.SlideIdList.ChildElements.Count + 256U),
+                                RelationshipId = mergedPresentationPart.GetIdOfPart(newSlidePart)
+                            };
+                            mergedPresentationPart.Presentation.SlideIdList.Append(newSlideId);
                         }
                     }
                 }
