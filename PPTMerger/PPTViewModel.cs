@@ -21,10 +21,10 @@ using Microsoft.Office.Core;
 using System.Runtime.InteropServices;
 using System.Windows.Documents;
 using System.Collections.Generic;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml;
 using System.Linq;
+using System.IO;
+using Microsoft.Office.Interop.PowerPoint;
 
 
 namespace PPTMerger
@@ -115,7 +115,7 @@ namespace PPTMerger
                 try
                 {
                     //Call MergePowerPointFiles() function 
-                    MergePowerPointFiles(selectedFiles, saveFileDialog.FileName);
+                    MergePresentations(selectedFiles, saveFileDialog.FileName);
                     MessageBox.Show($"Powerpoint presentations merged successfully.");
                 }
                 catch (Exception ex)
@@ -130,71 +130,36 @@ namespace PPTMerger
         /// </summary>
         /// <param name="paths"> Collection of path names </param>
         /// <param name="outPutPath">The output path that the merged presentation to be saved</param>
-        public void MergePowerPointFiles(ObservableCollection<string> pptPaths, string outputPath)
+        private void MergePresentations(ObservableCollection<string> pptPaths, string outputPath)
         {
-            using (PresentationDocument mergedPresentation = PresentationDocument.Create(outputPath, PresentationDocumentType.Presentation))
+            Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
+            Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
+
+            try
             {
-                // Create a new PresentationPart for the merged presentation
-                PresentationPart mergedPresentationPart = mergedPresentation.AddPresentationPart();
-                mergedPresentationPart.Presentation = new Presentation();
-                mergedPresentationPart.Presentation.SlideIdList = new SlideIdList();
-
-                // A dictionary to track already copied SlideMasterParts and SlideLayoutParts
-                Dictionary<string, SlideMasterPart> slideMasterParts = new Dictionary<string, SlideMasterPart>();
-                Dictionary<string, SlideLayoutPart> slideLayoutParts = new Dictionary<string, SlideLayoutPart>();
-
                 foreach (string pptPath in pptPaths)
                 {
-                    using (PresentationDocument sourcePresentation = PresentationDocument.Open(pptPath, false))
+                    Presentation sourcePresentation = pptApplication.Presentations.Open(
+                        pptPath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
+
+                    foreach (Slide slide in sourcePresentation.Slides)
                     {
-                        PresentationPart sourcePresentationPart = sourcePresentation.PresentationPart;
-
-                        // Copy SlideMasters to merged presentation
-                        foreach (SlideMasterPart masterPart in sourcePresentationPart.SlideMasterParts)
-                        {
-                            // Check if the SlideMasterPart is already added to avoid duplicates
-                            if (!slideMasterParts.ContainsKey(masterPart.Uri.ToString()))
-                            {
-                                SlideMasterPart newMasterPart = mergedPresentationPart.AddNewPart<SlideMasterPart>();
-                                newMasterPart.FeedData(masterPart.GetStream()); // Copy master content
-                                slideMasterParts[masterPart.Uri.ToString()] = newMasterPart;
-
-                                // Copy SlideLayouts associated with the SlideMasterPart
-                                foreach (SlideLayoutPart layoutPart in masterPart.SlideLayoutParts)
-                                {
-                                    // Check if layout is already copied
-                                    if (!slideLayoutParts.ContainsKey(layoutPart.Uri.ToString()))
-                                    {
-                                        SlideLayoutPart newLayoutPart = newMasterPart.AddNewPart<SlideLayoutPart>();
-                                        newLayoutPart.FeedData(layoutPart.GetStream());
-                                        slideLayoutParts[layoutPart.Uri.ToString()] = newLayoutPart;
-                                    }
-                                }
-                            }
-                        }
-
-                        // Add slides from source presentation
-                        foreach (SlideId slideId in sourcePresentationPart.Presentation.SlideIdList)
-                        {
-                            SlidePart sourceSlidePart = (SlidePart)sourcePresentationPart.GetPartById(slideId.RelationshipId);
-
-                            // Create a new SlidePart in the merged presentation and copy the slide content
-                            SlidePart newSlidePart = mergedPresentationPart.AddNewPart<SlidePart>();
-                            newSlidePart.FeedData(sourceSlidePart.GetStream());
-
-                            // Add the slide to the merged presentation's SlideIdList with a new unique ID
-                            SlideId newSlideId = new SlideId
-                            {
-                                Id = (UInt32Value)(mergedPresentationPart.Presentation.SlideIdList.ChildElements.Count + 256U),
-                                RelationshipId = mergedPresentationPart.GetIdOfPart(newSlidePart)
-                            };
-                            mergedPresentationPart.Presentation.SlideIdList.Append(newSlideId);
-                        }
+                        slide.Copy();
+                        mergedPresentation.Slides.Paste(mergedPresentation.Slides.Count + 1);
                     }
+
+                    sourcePresentation.Close();
+                    Marshal.ReleaseComObject(sourcePresentation);
                 }
 
-                // Save the merged presentation
-                mergedPresentationPart.Presentation.Save();
+                mergedPresentation.SaveAs(outputPath);
+            }
+            finally
+            {
+                mergedPresentation.Close();
+                pptApplication.Quit();
+                Marshal.ReleaseComObject(mergedPresentation);
+                Marshal.ReleaseComObject(pptApplication);
             }
         }
     }
