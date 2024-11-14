@@ -25,7 +25,6 @@ using DocumentFormat.OpenXml;
 using System.Linq;
 using System.IO;
 using Microsoft.Office.Interop.PowerPoint;
-using System.Threading;
 
 
 namespace PPTMerger
@@ -133,7 +132,7 @@ namespace PPTMerger
         /// <param name="outPutPath">The output path that the merged presentation to be saved</param>
         private void MergePresentations(ObservableCollection<string> pptPaths, string outputPath)
         {
-            var pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
+            Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
             Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
 
             try
@@ -143,66 +142,28 @@ namespace PPTMerger
                     Presentation sourcePresentation = pptApplication.Presentations.Open(
                         pptPath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
 
-                    try
+                    foreach (Slide slide in sourcePresentation.Slides)
                     {
-                        foreach (Slide slide in sourcePresentation.Slides)
-                        {
-                            bool pasted = false;
-                            int retryCount = 0;
-
-                            while (!pasted && retryCount < 3)
-                            {
-                                try
-                                {
-                                    // Copy the slide to the clipboard.
-                                    slide.Copy();
-                                    Thread.Sleep(100);  // Short delay to allow copy operation to complete
-
-                                    // Paste the slide into the merged presentation and retrieve it.
-                                    Slide newSlide = mergedPresentation.Slides.Paste()[1];
-
-                                    // Set the design and layout to match the source slide.
-                                    newSlide.Design = slide.Design;
-                                    newSlide.CustomLayout = slide.CustomLayout;
-
-                                    pasted = true; // Successfully pasted
-                                }
-                                catch (COMException)
-                                {
-                                    retryCount++;
-                                    Thread.Sleep(500); // Wait before retrying
-                                }
-                            }
-
-                            if (!pasted)
-                            {
-                                throw new InvalidOperationException("Failed to paste slide after multiple attempts.");
-                            }
-                        }
+                        slide.Copy();
+                        Slide newSlide = mergedPresentation.Slides.Paste()[1];
+                        newSlide.Design = slide.Design;
+                        newSlide.CustomLayout = slide.CustomLayout;
+                        //mergedPresentation.Slides.Paste(mergedPresentation.Slides.Count + 1);
                     }
-                    finally
-                    {
-                        // Ensure the source presentation is closed after copying.
-                        sourcePresentation.Close();
-                        Marshal.ReleaseComObject(sourcePresentation);
-                        Clipboard.Clear(); // Clear clipboard to reduce memory load
-                    }
+
+                    sourcePresentation.Close();
+                    Marshal.ReleaseComObject(sourcePresentation);
                 }
 
-                // Save the merged presentation to the output path.
                 mergedPresentation.SaveAs(outputPath);
             }
             finally
             {
-                // Ensure the merged presentation and PowerPoint application are closed and released.
                 mergedPresentation.Close();
                 pptApplication.Quit();
                 Marshal.ReleaseComObject(mergedPresentation);
                 Marshal.ReleaseComObject(pptApplication);
             }
-
-
         }
     }
-
 }
