@@ -144,8 +144,9 @@ namespace PPTMerger
 
                     foreach (Slide slide in sourcePresentation.Slides)
                     {
-                        slide.Copy();
-                        mergedPresentation.Slides.Paste(mergedPresentation.Slides.Count + 1);
+                        // Use Duplicate instead of Copy to retain formatting and layout.
+                        Slide duplicatedSlide = slide.Duplicate()[1];
+                        duplicatedSlide.MoveTo(mergedPresentation.Slides.Count + 1);
                     }
 
                     sourcePresentation.Close();
@@ -162,5 +163,6 @@ namespace PPTMerger
                 Marshal.ReleaseComObject(pptApplication);
             }
         }
+
     }
 }
