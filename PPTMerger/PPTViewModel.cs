@@ -25,6 +25,7 @@ using DocumentFormat.OpenXml;
 using System.Linq;
 using System.IO;
 using Microsoft.Office.Interop.PowerPoint;
+using System.Threading;
 
 
 namespace PPTMerger
@@ -132,7 +133,7 @@ namespace PPTMerger
         /// <param name="outPutPath">The output path that the merged presentation to be saved</param>
         private void MergePresentations(ObservableCollection<string> pptPaths, string outputPath)
         {
-            Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
+            var pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
             Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
 
             try
@@ -146,15 +147,37 @@ namespace PPTMerger
                     {
                         foreach (Slide slide in sourcePresentation.Slides)
                         {
-                            // Copy the slide to the clipboard.
-                            slide.Copy();
+                            bool pasted = false;
+                            int retryCount = 0;
 
-                            // Paste it into the merged presentation.
-                            Slide newSlide = mergedPresentation.Slides.Paste()[1]; // Use indexing to access the newly pasted slide
+                            while (!pasted && retryCount < 3)
+                            {
+                                try
+                                {
+                                    // Copy the slide to the clipboard.
+                                    slide.Copy();
+                                    Thread.Sleep(100);  // Short delay to allow copy operation to complete
 
-                            // Apply the design/layout from the source slide to the pasted slide to retain formatting.
-                            newSlide.Design = slide.Design;
-                            newSlide.CustomLayout = slide.CustomLayout;
+                                    // Paste the slide into the merged presentation and retrieve it.
+                                    Slide newSlide = mergedPresentation.Slides.Paste()[1];
+
+                                    // Set the design and layout to match the source slide.
+                                    newSlide.Design = slide.Design;
+                                    newSlide.CustomLayout = slide.CustomLayout;
+
+                                    pasted = true; // Successfully pasted
+                                }
+                                catch (COMException)
+                                {
+                                    retryCount++;
+                                    Thread.Sleep(500); // Wait before retrying
+                                }
+                            }
+
+                            if (!pasted)
+                            {
+                                throw new InvalidOperationException("Failed to paste slide after multiple attempts.");
+                            }
                         }
                     }
                     finally
@@ -162,6 +185,7 @@ namespace PPTMerger
                         // Ensure the source presentation is closed after copying.
                         sourcePresentation.Close();
                         Marshal.ReleaseComObject(sourcePresentation);
+                        Clipboard.Clear(); // Clear clipboard to reduce memory load
                     }
                 }
 
@@ -176,9 +200,9 @@ namespace PPTMerger
                 Marshal.ReleaseComObject(mergedPresentation);
                 Marshal.ReleaseComObject(pptApplication);
             }
+
+
         }
-
-
-
     }
+
 }
