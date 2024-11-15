@@ -10,5 +10,6 @@ namespace PPTMerger.Repo
     internal interface IRepo
     {
         void MergePresentations(ObservableCollection<string> pptPaths, string outputPath);
+
     }
 }
