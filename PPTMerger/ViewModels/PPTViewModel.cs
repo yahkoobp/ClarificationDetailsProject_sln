@@ -10,7 +10,6 @@
 // ----------------------------------------------------------------------------------------
 
 using System;
-
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
@@ -19,13 +18,9 @@ using ClarificationDetailsProject.ViewModels;
 using ClarificationDetailsProject.Commands;
 using Microsoft.Office.Core;
 using System.Runtime.InteropServices;
-using System.Windows.Documents;
-using System.Collections.Generic;
-using DocumentFormat.OpenXml;
-using System.Linq;
-using System.IO;
 using Microsoft.Office.Interop.PowerPoint;
-
+using PPTMerger.Repo;
+using PPTMerger.MergeRepo;
 
 namespace PPTMerger
 {
@@ -41,9 +36,11 @@ namespace PPTMerger
     {
         //For storing paths for presentations
         private ObservableCollection<string> selectedFiles;
+        private readonly IRepo repo;
 
         public PPTViewModel()
         {
+            repo = new FileMergeRepo();
             selectedFiles = new ObservableCollection<string>();
             SelectFilesCommand = new RelayCommand(SelectFiles);
             MergeCommand = new RelayCommand(MergePresentations);
@@ -115,54 +112,13 @@ namespace PPTMerger
                 try
                 {
                     //Call MergePowerPointFiles() function 
-                    MergePresentations(selectedFiles, saveFileDialog.FileName);
+                    repo.MergePresentations(selectedFiles, saveFileDialog.FileName);
                     MessageBox.Show($"Powerpoint presentations merged successfully.");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show($"{ex.Message}");
                 }
-            }
-        }
-
-        /// <summary>
-        /// Function to merge presentations
-        /// </summary>
-        /// <param name="paths"> Collection of path names </param>
-        /// <param name="outPutPath">The output path that the merged presentation to be saved</param>
-        private void MergePresentations(ObservableCollection<string> pptPaths, string outputPath)
-        {
-            Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
-            Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
-
-            try
-            {
-                foreach (string pptPath in pptPaths)
-                {
-                    Presentation sourcePresentation = pptApplication.Presentations.Open(
-                        pptPath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
-
-                    foreach (Slide slide in sourcePresentation.Slides)
-                    {
-                        slide.Copy();
-                        Slide newSlide = mergedPresentation.Slides.Paste()[1];
-                        newSlide.Design = slide.Design;
-                        newSlide.CustomLayout = slide.CustomLayout;
-                        //mergedPresentation.Slides.Paste(mergedPresentation.Slides.Count + 1);
-                    }
-
-                    sourcePresentation.Close();
-                    Marshal.ReleaseComObject(sourcePresentation);
-                }
-
-                mergedPresentation.SaveAs(outputPath);
-            }
-            finally
-            {
-                mergedPresentation.Close();
-                pptApplication.Quit();
-                Marshal.ReleaseComObject(mergedPresentation);
-                Marshal.ReleaseComObject(pptApplication);
             }
         }
     }

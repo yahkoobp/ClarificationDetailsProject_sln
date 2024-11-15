@@ -6,11 +6,20 @@
         xmlns:local="clr-namespace:PPTMerger"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid Margin="10">
-        <StackPanel>
-            <Button Content="Select PowerPoint presentations" Command="{Binding SelectFilesCommand}"/>
-            <ListBox ItemsSource="{Binding SelectedFiles}" Margin="0 10"/>
-            <Button Content="Merge and Save" Command="{Binding MergeCommand}" Margin="0 10" Width="200"/>
-        </StackPanel>
+    <Grid Margin="10" MaxWidth="1000">
+        <Border BorderThickness="1" BorderBrush="Gray">
+            <StackPanel Margin="10" Orientation="Vertical">
+                <Label Content="Slect file type"/>
+                <ComboBox>
+                    <ComboBoxItem>Presentations</ComboBoxItem>
+                    <ComboBoxItem>Excels</ComboBoxItem>
+                    <ComboBoxItem>PDF</ComboBoxItem>
+                    <ComboBoxItem>Word</ComboBoxItem>
+                </ComboBox>
+                <Button Content="Select PowerPoint presentations" Command="{Binding SelectFilesCommand}"/>
+                <ListBox ItemsSource="{Binding SelectedFiles}" Margin="0 10"/>
+                <Button Content="Merge and Save" Command="{Binding MergeCommand}" Margin="0 10" Width="200"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

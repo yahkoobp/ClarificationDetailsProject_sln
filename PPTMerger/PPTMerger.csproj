@@ -61,9 +61,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="PPTViewModel.cs" />
-    <Compile Include="RelayCommand.cs" />
-    <Compile Include="ViewModelBase.cs" />
+    <Compile Include="MergeRepo\FileMergeRepo.cs" />
+    <Compile Include="ViewModels\PPTViewModel.cs" />
+    <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="Repo\IRepo.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -133,5 +135,6 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
