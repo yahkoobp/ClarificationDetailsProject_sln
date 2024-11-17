@@ -43,6 +43,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -61,8 +62,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="MergeRepo\FileMergeRepo.cs" />
-    <Compile Include="ViewModels\PPTViewModel.cs" />
+    <Compile Include="Enums\FileTypes.cs" />
+    <Compile Include="MergeRepo\ExcelMergeRepo.cs" />
+    <Compile Include="MergeRepo\PDFMergeRepo.cs" />
+    <Compile Include="MergeRepo\PPTMergeRepo.cs" />
+    <Compile Include="MergeRepo\WORDMergeRepo.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="Repo\IRepo.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />

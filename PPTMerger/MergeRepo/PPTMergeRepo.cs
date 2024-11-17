@@ -11,9 +11,9 @@ using PPTMerger.Repo;
 
 namespace PPTMerger.MergeRepo
 {
-    internal class FileMergeRepo : IRepo
+    internal class PPTMergeRepo : IRepo
     {
-        public void MergePresentations(ObservableCollection<string> pptPaths, string outputPath)
+        public void MergeFiles(ObservableCollection<string> pptPaths, string outputPath)
         {
             Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
             Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
