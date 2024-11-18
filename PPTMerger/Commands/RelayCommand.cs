@@ -15,7 +15,7 @@ namespace ClarificationDetailsProject.Commands
         /// <summary>
         /// The action to execute when the command is invoked.
         /// </summary>
-        private readonly Action _execute;
+        private readonly Action<object> _execute;
 
         /// <summary>
         /// A function that determines whether the command can be executed.
@@ -27,7 +27,7 @@ namespace ClarificationDetailsProject.Commands
         /// </summary>
         /// <param name="execute">The action to execute when the command is invoked.</param>
         /// <param name="canExecute">A function that determines whether the command can be executed.</param>
-        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        public RelayCommand(Action<object> execute, Func<bool> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
@@ -58,7 +58,7 @@ namespace ClarificationDetailsProject.Commands
         /// <param name="parameter">The parameter to pass to the Execute method.</param>
         public void Execute(object parameter)
         {
-            _execute();
+            _execute(parameter);
         }
     }
 }

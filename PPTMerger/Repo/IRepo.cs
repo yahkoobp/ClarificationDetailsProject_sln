@@ -9,7 +9,7 @@ namespace PPTMerger.Repo
 {
     internal interface IRepo
     {
-        void MergePresentations(ObservableCollection<string> pptPaths, string outputPath);
+        void MergeFiles(ObservableCollection<string> filePaths, string outputPath);
 
     }
 }
