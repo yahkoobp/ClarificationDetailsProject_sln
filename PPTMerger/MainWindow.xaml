@@ -47,7 +47,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical">
-                        <Button Content="Clear all" Width="50" HorizontalAlignment="Right"/>
+                        <Button Content="Clear all" Command="{Binding ClearAllCommand}" Width="50" HorizontalAlignment="Right"/>
                         <ListBox x:Name="myListBox" Height="100" ItemsSource="{Binding SelectedFiles}"
          AllowDrop="True"
          PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"

@@ -50,6 +50,7 @@ namespace PPTMerger
             SelectFilesCommand = new RelayCommand(SelectFiles);
             RemoveItemCommand = new RelayCommand(RemoveFile);
             MergeCommand = new RelayCommand(MergeFiles);
+            ClearAllCommand = new RelayCommand(ClearAllFiles);
             repo = new PPTMergeRepo();
             repo.FileProcessingFailed += (sender, e) =>
             {
@@ -115,6 +116,8 @@ namespace PPTMerger
         //Command for selecting files
         public ICommand SelectFilesCommand { get; }
         public ICommand RemoveItemCommand { get; }
+
+        public ICommand ClearAllCommand { get; }
         public string MergeStatus {
             get
             {
@@ -223,6 +226,11 @@ namespace PPTMerger
             {
                 selectedFiles.Remove((string)file);
             }
+        }
+
+        private void ClearAllFiles(object obj)
+        {
+            SelectedFiles.Clear();
         }
 
 
