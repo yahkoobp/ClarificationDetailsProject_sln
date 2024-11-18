@@ -1,4 +1,5 @@
-﻿using PPTMerger.Repo;
+﻿using PPTMerger.Delegates;
+using PPTMerger.Repo;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +12,8 @@ namespace PPTMerger.MergeRepo
 {
     internal class PDFMergeRepo : IRepo
     {
+        public event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
+
         public void MergeFiles(ObservableCollection<string> filePaths, string outputPath)
         {
             MessageBox.Show("Not implemented");

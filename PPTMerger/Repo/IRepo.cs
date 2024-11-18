@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PPTMerger.Delegates;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace PPTMerger.Repo
 {
     internal interface IRepo
     {
+        event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
         void MergeFiles(ObservableCollection<string> filePaths, string outputPath);
 
     }

@@ -39,6 +39,7 @@ namespace PPTMerger
         private bool isFolderSelection;
         private bool isFileSelection;
         private string selectedPath;
+        private string mergeStatus;
         private ObservableCollection<string> selectedFiles;
         private IRepo repo;
 
@@ -49,6 +50,11 @@ namespace PPTMerger
             SelectFilesCommand = new RelayCommand(SelectFiles);
             RemoveItemCommand = new RelayCommand(RemoveFile);
             MergeCommand = new RelayCommand(MergeFiles);
+            repo = new PPTMergeRepo();
+            repo.FileProcessingFailed += (sender, e) =>
+            {
+                MessageBox.Show($"Error processing file '{e.FilePath}': {e.ErrorMessage}");
+            };
         }
 
         public FileType SelectedFileType
@@ -109,7 +115,17 @@ namespace PPTMerger
         //Command for selecting files
         public ICommand SelectFilesCommand { get; }
         public ICommand RemoveItemCommand { get; }
-        public string MergeStatus { get; set; }
+        public string MergeStatus {
+            get
+            {
+                return mergeStatus;
+            }
+            set
+            {
+                mergeStatus = value;
+                OnPropertyChanged(nameof(MergeStatus));
+            }
+        }
 
         //Command for merging presentations
         public ICommand MergeCommand { get; }

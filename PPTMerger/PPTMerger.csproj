@@ -62,6 +62,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Delegates\FileProcessingFailedEventArgs.cs" />
     <Compile Include="Enums\FileTypes.cs" />
     <Compile Include="MergeRepo\ExcelMergeRepo.cs" />
     <Compile Include="MergeRepo\PDFMergeRepo.cs" />

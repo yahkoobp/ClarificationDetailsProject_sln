@@ -6,8 +6,14 @@
         xmlns:local="clr-namespace:PPTMerger"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid Margin="10" MaxWidth="800">
-        <Border BorderThickness="1" BorderBrush="Gray">
+    <Grid Margin="10" MaxWidth="1400">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Main Content -->
+        <Border Grid.Row="0" BorderThickness="1" BorderBrush="Gray">
             <StackPanel Margin="10" Orientation="Vertical">
                 <ComboBox IsEditable="True" Text="{Binding SelectedFileType}" Foreground="Gray">
                     <ComboBox.Resources>
@@ -30,22 +36,19 @@
                     <ComboBoxItem>Excel</ComboBoxItem>
                     <ComboBoxItem>Word</ComboBoxItem>
                 </ComboBox>
-                
-                <StackPanel Orientation="Vertical" >
+
+                <StackPanel Orientation="Vertical">
                     <TextBlock Text="Choose an option:" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                     <StackPanel Orientation="Horizontal">
                         <RadioButton x:Name="radioSelectFolder" IsChecked="{Binding IsFolderSelection}"  Content="Select Folder" VerticalAlignment="Center" Margin="5,0"/>
                         <RadioButton x:Name="radioSelectFile" IsChecked="{Binding IsFileSelection}" Content="Select File" VerticalAlignment="Center" Margin="5,0"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBox  Text="filename" Width="300"/>
                         <Button Content="Browse" Command="{Binding SelectFilesCommand}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical">
                         <Button Content="Clear all" Width="50" HorizontalAlignment="Right"/>
-                        <ListBox x:Name="myListBox" Height="150" ItemsSource="{Binding SelectedFiles}"
+                        <ListBox x:Name="myListBox" Height="100" ItemsSource="{Binding SelectedFiles}"
          AllowDrop="True"
          PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"
          Drop="ListBox_Drop">
@@ -70,15 +73,23 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-
                     </StackPanel>
                 </StackPanel>
-
-
-                <Button Content="Select PowerPoint presentations" Command="{Binding SelectFilesCommand}"/>
-                <ListBox ItemsSource="{Binding SelectedFiles}" Margin="0 10"/>
-                <Button Content="Merge and Save" Command="{Binding MergeCommand}" Margin="0 10" Width="200"/>
+                <Button Content="Merge and Save" Command="{Binding MergeCommand}" Margin="0 10" Width="200" HorizontalAlignment="Right"/>
             </StackPanel>
         </Border>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="1">
+            <StatusBar.Items>
+                <StatusBarItem>
+                    <TextBlock Text="Ready" Foreground="Gray"/>
+                </StatusBarItem>
+                <Separator />
+                <StatusBarItem>
+                    <TextBlock Text="{Binding MergeStatus}" Foreground="Gray"/>
+                </StatusBarItem>
+            </StatusBar.Items>
+        </StatusBar>
     </Grid>
 </Window>

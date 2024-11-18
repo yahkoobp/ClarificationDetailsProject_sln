@@ -5,16 +5,17 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.PowerPoint;
+using PPTMerger.Delegates;
 using PPTMerger.Repo;
 
 namespace PPTMerger.MergeRepo
 {
     internal class PPTMergeRepo : IRepo
     {
-        public Delegate RaiseError;
-
+        public event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
         public void MergeFiles(ObservableCollection<string> pptPaths, string outputPath)
-        {          
+        {  
+            
             Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
             Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
             try
@@ -25,7 +26,8 @@ namespace PPTMerger.MergeRepo
                     {
                         if (!IsPowerpointFile(pptPath))
                         {
-                            MessageBox.Show($"{pptPath} is not a valid powerpoint file , press ok to continue");
+                            FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
+                            pptPath, $"{pptPath} is not a valid PowerPoint file."));
                             continue;
                         }
                         //open each presentations in the path
@@ -46,6 +48,8 @@ namespace PPTMerger.MergeRepo
                             }
                             catch(Exception ex)
                             {
+                                FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
+                                pptPath, $"Failed to process slide: {slide.SlideNumber}"));
                                 continue;
                             }
                            
@@ -55,12 +59,21 @@ namespace PPTMerger.MergeRepo
                     }
                     catch (Exception ex)
                     {
-                        continue;
+                        FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
+                         pptPath, $"Cannot open file: {pptPath}"));
                     }
                     
                 }
                 //Save the merged presentation
-                mergedPresentation.SaveAs(outputPath);
+                if(mergedPresentation.Slides.Count == 0)
+                {
+                    throw new Exception("Cannot merge.");
+                }
+                else
+                {
+                    mergedPresentation.SaveAs(outputPath);
+                }
+                
             }
             catch (Exception ex)
             {
