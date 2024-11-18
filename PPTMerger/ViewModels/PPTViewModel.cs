@@ -16,9 +16,6 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using ClarificationDetailsProject.ViewModels;
 using ClarificationDetailsProject.Commands;
-using Microsoft.Office.Core;
-using System.Runtime.InteropServices;
-using Microsoft.Office.Interop.PowerPoint;
 using PPTMerger.Repo;
 using PPTMerger.MergeRepo;
 
