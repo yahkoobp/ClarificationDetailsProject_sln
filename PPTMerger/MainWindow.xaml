@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PPTMerger"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" FontWeight="SemiBold">
     <Grid Margin="10" MaxWidth="1400">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -61,7 +61,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <!-- Display the item text -->
-                                        <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" Margin="5,0,10,0" />
+                                        <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" Margin="5,0,10,0" MinWidth="50" HorizontalAlignment="Stretch" />
 
                                         <!-- "X" Button with Command Binding -->
                                         <Button Grid.Column="1" Content="X" Width="25" Height="25" 
