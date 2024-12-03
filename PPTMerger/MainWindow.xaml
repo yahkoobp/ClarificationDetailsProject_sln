@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PPTMerger"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" FontWeight="SemiBold">
+        Title="FileMerger" Height="450" Width="800" FontWeight="SemiBold" WindowState="Maximized">
     <Grid Margin="10" MaxWidth="1400">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -80,14 +80,14 @@
         </Border>
 
         <!-- Status Bar -->
-        <StatusBar Grid.Row="1">
+        <StatusBar Grid.Row="1" Background="Teal">
             <StatusBar.Items>
                 <StatusBarItem>
-                    <TextBlock Text="Ready" Foreground="Gray"/>
+                    <TextBlock Text="Ready" Foreground="White"/>
                 </StatusBarItem>
                 <Separator />
                 <StatusBarItem>
-                    <TextBlock Text="{Binding MergeStatus}" Foreground="Gray"/>
+                    <TextBlock Text="{Binding MergeStatus}" Foreground="White"/>
                 </StatusBarItem>
             </StatusBar.Items>
         </StatusBar>
