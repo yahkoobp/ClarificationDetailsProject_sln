@@ -12,6 +12,11 @@ namespace PPTMerger.MergeRepo
     internal class PPTMergeRepo : IRepo
     {
         public event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
+        public event Action<string> LogEvent;
+        protected void OnLog(string message)
+        {
+            LogEvent?.Invoke($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
+        }
         public void MergeFiles(ObservableCollection<string> pptPaths, string outputPath)
         {  
             
@@ -19,19 +24,25 @@ namespace PPTMerger.MergeRepo
             Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
             try
             {
+                OnLog($"Starting merge operation with {pptPaths.Count} files.");
+                int processedCount = 0;
+                int skippedCount = 0;
+
                 foreach (string pptPath in pptPaths)
                 {
                     try
                     {
                         if (!IsPowerpointFile(pptPath))
                         {
-                            FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
-                            pptPath, $"{pptPath} is not a valid PowerPoint file."));
+                            //FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
+                            //pptPath, $"{pptPath} is not a valid PowerPoint file."));
+                            OnLog($"{pptPath} is not a valid PowerPoint file.");
                             continue;
                         }
                         //open each presentations in the path
                         Presentation sourcePresentation = pptApplication.Presentations.Open(
                             pptPath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
+                        OnLog($"Processing file: {pptPath}");
 
                         //for each slides in the presentaion do the following
                         foreach (Slide slide in sourcePresentation.Slides)
@@ -47,30 +58,37 @@ namespace PPTMerger.MergeRepo
                             }
                             catch(Exception ex)
                             {
-                                FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
-                                pptPath, $"Failed to process slide: {slide.SlideNumber}"));
+                                //FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
+                                //pptPath, $"Failed to process slide: {slide.SlideNumber}"));
+                                OnLog($"Failed to process slide: {slide.SlideNumber}");
                                 continue;
                             }
                            
                         }
                         sourcePresentation.Close();
                         Marshal.ReleaseComObject(sourcePresentation);
+                        processedCount++;
                     }
                     catch (Exception ex)
                     {
-                        FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
-                         pptPath, $"Cannot open file: {pptPath}"));
+                        //FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
+                        // pptPath, $"Cannot open file: {pptPath}"));
+                        OnLog($"Error processing file: {pptPath}. Skipping. Details: {ex.Message}");
+                        skippedCount++;
                     }
                     
                 }
                 //Save the merged presentation
                 if(mergedPresentation.Slides.Count == 0)
                 {
-                    throw new Exception("Cannot merge.");
+                    OnLog($"Merge Failed");
+                    throw new Exception("Merge Failed");
+
                 }
                 else
                 {
                     mergedPresentation.SaveAs(outputPath);
+                    OnLog($"Merge completed. Files processed: {processedCount}, Skipped: {skippedCount}");
                 }
                 
             }

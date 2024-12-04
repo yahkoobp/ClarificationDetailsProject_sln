@@ -37,7 +37,7 @@
                     <ComboBoxItem>Word</ComboBoxItem>
                 </ComboBox>
 
-                <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Vertical" Margin="0 10 0 0">
                     <TextBlock Text="Choose an option:" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                     <StackPanel Orientation="Horizontal">
@@ -48,39 +48,37 @@
 
                     <StackPanel Orientation="Vertical">
                         <Button Content="Clear all" Command="{Binding ClearAllCommand}" Width="50" HorizontalAlignment="Right"/>
-                        <ListBox x:Name="myListBox" Height="100" ItemsSource="{Binding SelectedFiles}"
+                        <ListBox x:Name="myListBox" Height="200" ItemsSource="{Binding SelectedFiles}"
          AllowDrop="True"
          PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"
          Drop="ListBox_Drop">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid>
+                                    <Grid Width="1300">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-
-                                        <!-- Display the item text -->
-                                        <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" Margin="5,0,10,0" MinWidth="50" HorizontalAlignment="Stretch" />
-
-                                        <!-- "X" Button with Command Binding -->
-                                        <Button Grid.Column="1" Content="X" Width="25" Height="25" 
-                        VerticalAlignment="Center" Margin="0,0,5,0"
-                                                Focusable="True"
-                        Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                        CommandParameter="{Binding}"/>
+                                        <TextBlock Text="{Binding}" Grid.Column="0" VerticalAlignment="Center"  />
+                                        <Button Grid.Column="1" Content="X" Width="45" Height="25" VerticalAlignment="Center" Margin="25 0 0 0"
+                            Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                            CommandParameter="{Binding}" />
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </StackPanel>
                 </StackPanel>
-                <Button Content="Merge and Save" Command="{Binding MergeCommand}" Margin="0 10" Width="200" HorizontalAlignment="Right"/>
+                <Button Content="Merge and Save" Command="{Binding MergeCommand}" Margin="0 10" Width="200" HorizontalAlignment="Right" Background="Transparent"/>
+                <ProgressBar Height="20" Minimum="0" Maximum="100"
+                     Value="50" />
+                <GroupBox Header="Log">
+                    <ListBox ItemsSource="{Binding LogEntries}" Height="250" />
+                </GroupBox>
             </StackPanel>
         </Border>
-
         <!-- Status Bar -->
-        <StatusBar Grid.Row="1" Background="Teal">
+        <StatusBar Grid.Row="1" Background="DarkBlue">
             <StatusBar.Items>
                 <StatusBarItem>
                     <TextBlock Text="Ready" Foreground="White"/>

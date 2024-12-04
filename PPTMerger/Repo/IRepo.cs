@@ -11,6 +11,7 @@ namespace PPTMerger.Repo
     internal interface IRepo
     {
         event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
+        event Action<string> LogEvent;
         void MergeFiles(ObservableCollection<string> filePaths, string outputPath);
 
     }

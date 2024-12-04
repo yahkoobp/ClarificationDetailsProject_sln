@@ -41,11 +41,13 @@ namespace PPTMerger
         private string selectedPath;
         private string mergeStatus;
         private ObservableCollection<string> selectedFiles;
+        private ObservableCollection<string> logEntries;
         private IRepo repo;
 
         public MainViewModel()
         {           
             selectedFiles = new ObservableCollection<string>();
+            LogEntries = new ObservableCollection<string>();
             SelectedFileType = FileType.PowerPoint;
             SelectFilesCommand = new RelayCommand(SelectFiles);
             RemoveItemCommand = new RelayCommand(RemoveFile);
@@ -55,6 +57,10 @@ namespace PPTMerger
             repo.FileProcessingFailed += (sender, e) =>
             {
                 MessageBox.Show($"Error processing file '{e.FilePath}': {e.ErrorMessage}");
+            };
+            repo.LogEvent += (string message) =>
+            {
+                LogEntries.Add(message);
             };
         }
 
@@ -80,6 +86,19 @@ namespace PPTMerger
             {
                 selectedFiles = value;
                 OnPropertyChanged(nameof(SelectedFiles));
+            }
+        }
+
+        public ObservableCollection<string> LogEntries
+        {
+            get
+            {
+                return logEntries;
+            }
+            set
+            {
+                logEntries = value;
+                OnPropertyChanged(nameof(LogEntries));
             }
         }
 

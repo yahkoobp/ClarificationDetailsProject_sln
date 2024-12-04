@@ -13,7 +13,11 @@ namespace PPTMerger.MergeRepo
     internal class WORDMergeRepo : IRepo
     {
         public event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
-
+        public event Action<string> LogEvent;
+        protected void OnLog(string message)
+        {
+            LogEvent?.Invoke($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
+        }
         public void MergeFiles(ObservableCollection<string> filePaths, string outputPath)
         {
             MessageBox.Show("Not implemented");
