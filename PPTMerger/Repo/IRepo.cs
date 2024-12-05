@@ -12,7 +12,8 @@ namespace PPTMerger.Repo
     {
         event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
         event Action<string> LogEvent;
-        void MergeFiles(ObservableCollection<string> filePaths, string outputPath);
+        event EventHandler<int> ProgressEvent;
+        Task MergeFilesAsync(ObservableCollection<string> filePaths, string outputPath);
 
     }
 }

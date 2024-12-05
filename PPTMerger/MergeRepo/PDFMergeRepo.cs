@@ -14,12 +14,13 @@ namespace PPTMerger.MergeRepo
     {
         public event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
         public event Action<string> LogEvent;
+        public event EventHandler<int> ProgressEvent;
         protected void OnLog(string message)
         {
             LogEvent?.Invoke($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
         }
 
-        public void MergeFiles(ObservableCollection<string> filePaths, string outputPath)
+        public async Task MergeFilesAsync(ObservableCollection<string> filePaths, string outputPath)
         {
             MessageBox.Show("Not implemented");
             return;

@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.PowerPoint;
 using PPTMerger.Delegates;
@@ -13,98 +14,107 @@ namespace PPTMerger.MergeRepo
     {
         public event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
         public event Action<string> LogEvent;
+        public event EventHandler<int> ProgressEvent;
         protected void OnLog(string message)
         {
             LogEvent?.Invoke($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
         }
-        public void MergeFiles(ObservableCollection<string> pptPaths, string outputPath)
-        {  
-            
-            Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
-            Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoFalse);
-            try
+        public async Task MergeFilesAsync(ObservableCollection<string> pptPaths, string outputPath)
+        {
+            await Task.Run(() =>
             {
-                OnLog($"Starting merge operation with {pptPaths.Count} files.");
-                int processedCount = 0;
-                int skippedCount = 0;
+                int totalFiles = pptPaths.Count;
+                int currentFile = 0;
+                Microsoft.Office.Interop.PowerPoint.Application pptApplication = null;
+                Presentation mergedPresentation = null;
 
-                foreach (string pptPath in pptPaths)
+                try
                 {
-                    try
-                    {
-                        if (!IsPowerpointFile(pptPath))
-                        {
-                            //FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
-                            //pptPath, $"{pptPath} is not a valid PowerPoint file."));
-                            OnLog($"{pptPath} is not a valid PowerPoint file.");
-                            continue;
-                        }
-                        //open each presentations in the path
-                        Presentation sourcePresentation = pptApplication.Presentations.Open(
-                            pptPath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
-                        OnLog($"Processing file: {pptPath}");
+                    pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
+                    mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoFalse);
 
-                        //for each slides in the presentaion do the following
-                        foreach (Slide slide in sourcePresentation.Slides)
+                    OnLog($"Starting merge operation with {pptPaths.Count} files.");
+                    int processedCount = 0;
+                    int skippedCount = 0;
+
+                    foreach (string pptPath in pptPaths)
+                    {
+                        try
                         {
-                            try
+                            currentFile++;
+                            if (!IsPowerpointFile(pptPath))
                             {
-                                //copy the slide
-                                slide.Copy();
-                                //Paste the slide to the merged presentation
-                                Slide newSlide = mergedPresentation.Slides.Paste(mergedPresentation.Slides.Count + 1)[1];
-                                //Preserves the source format and designs
-                                newSlide.Design = slide.Design;
-                            }
-                            catch(Exception ex)
-                            {
-                                //FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
-                                //pptPath, $"Failed to process slide: {slide.SlideNumber}"));
-                                OnLog($"Failed to process slide: {slide.SlideNumber}");
+                                OnLog($"{pptPath} is not a valid PowerPoint file.");
+                                skippedCount++;
                                 continue;
                             }
-                           
-                        }
-                        sourcePresentation.Close();
-                        Marshal.ReleaseComObject(sourcePresentation);
-                        processedCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        //FileProcessingFailed?.Invoke(this, new FileProcessingFailedEventArgs(
-                        // pptPath, $"Cannot open file: {pptPath}"));
-                        OnLog($"Error processing file: {pptPath}. Skipping. Details: {ex.Message}");
-                        skippedCount++;
-                    }
-                    
-                }
-                //Save the merged presentation
-                if(mergedPresentation.Slides.Count == 0)
-                {
-                    OnLog($"Merge Failed");
-                    throw new Exception("Merge Failed");
 
-                }
-                else
-                {
+                            // Open each presentation in the path
+                            Presentation sourcePresentation = pptApplication.Presentations.Open(
+                                pptPath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
+
+                            OnLog($"Processing file: {pptPath}");
+
+                            // Process each slide in the presentation
+                            foreach (Slide slide in sourcePresentation.Slides)
+                            {
+                                try
+                                {
+                                    slide.Copy();
+                                    Slide newSlide = mergedPresentation.Slides.Paste(mergedPresentation.Slides.Count + 1)[1];
+                                    newSlide.Design = slide.Design;
+                                }
+                                catch
+                                {
+                                    OnLog($"Failed to process slide: {slide.SlideNumber}");
+                                }
+                            }
+
+                            sourcePresentation.Close();
+                            Marshal.ReleaseComObject(sourcePresentation);
+                            processedCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            OnLog($"Error processing file: {pptPath}. Skipping. Details: {ex.Message}");
+                            skippedCount++;
+                        }
+                        int progress = (currentFile * 100) / totalFiles;
+                        OnLog($"Processing file {currentFile} of {totalFiles}...");
+                        ProgressEvent?.Invoke(this, progress);
+                    }
+
+                    // Save the merged presentation
+                    if (mergedPresentation.Slides.Count == 0)
+                    {
+                        OnLog("Merge Failed: No slides merged.");
+                        throw new Exception("Merge Failed: No slides merged.");
+                    }
+
                     mergedPresentation.SaveAs(outputPath);
-                    OnLog($"Merge completed. Files processed: {processedCount}, Skipped: {skippedCount}");
+                    OnLog($"Merge completed successfully. Files processed: {processedCount}, Skipped: {skippedCount}");
                 }
-                
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                //Cleanup the resources
-                mergedPresentation.Close();
-                pptApplication.Quit();
-                Marshal.ReleaseComObject(mergedPresentation);
-                Marshal.ReleaseComObject(pptApplication);
-            }
+                catch (Exception ex)
+                {
+                    OnLog($"Merge failed. Error: {ex.Message}");
+                    throw;
+                }
+                finally
+                {
+                    // Cleanup resources
+                    mergedPresentation?.Close();
+                    pptApplication?.Quit();
+
+                    if (mergedPresentation != null)
+                        Marshal.ReleaseComObject(mergedPresentation);
+
+                    if (pptApplication != null)
+                        Marshal.ReleaseComObject(pptApplication);
+                }
+            });
         }
+
+
 
         public bool IsPowerpointFile(string filepath)
         {

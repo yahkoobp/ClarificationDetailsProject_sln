@@ -19,6 +19,7 @@ using PPTMerger.MergeRepo;
 using System.IO;
 using System.Windows.Forms;
 using PPTMerger.Enums;
+using System.Windows.Threading;
 
 namespace PPTMerger
 {
@@ -43,6 +44,9 @@ namespace PPTMerger
         private ObservableCollection<string> selectedFiles;
         private ObservableCollection<string> logEntries;
         private IRepo repo;
+        private int progressValue;
+        private bool isMerging;
+        private string progressStatus;
 
         public MainViewModel()
         {           
@@ -58,11 +62,19 @@ namespace PPTMerger
             {
                 MessageBox.Show($"Error processing file '{e.FilePath}': {e.ErrorMessage}");
             };
+            Dispatcher = Dispatcher.CurrentDispatcher;
+
             repo.LogEvent += (string message) =>
             {
-                LogEntries.Add(message);
+                Dispatcher.Invoke(() => LogEntries.Add(message));
+            };
+            repo.ProgressEvent += (sender, progress) =>
+            {
+                Dispatcher.Invoke(() => ProgressValue = progress);
             };
         }
+
+        public Dispatcher Dispatcher { get; }
 
         public FileType SelectedFileType
         {
@@ -149,6 +161,35 @@ namespace PPTMerger
             }
         }
 
+        public int ProgressValue
+        {
+            get => progressValue;
+            set
+            {
+                progressValue = value;
+                OnPropertyChanged(nameof(ProgressValue));
+            }
+        }      
+        public bool IsMerging
+        {
+            get => isMerging;
+            set
+            {
+                isMerging = value;
+                OnPropertyChanged(nameof(IsMerging));
+            }
+        }
+
+        public string ProgressStatus
+        {
+            get => progressStatus;
+            set
+            {
+                progressStatus = value;
+                OnPropertyChanged(nameof(ProgressStatus));
+            }
+        }
+
         //Command for merging presentations
         public ICommand MergeCommand { get; }
 
@@ -161,25 +202,25 @@ namespace PPTMerger
                     repo = new PPTMergeRepo();
                     fileFilter = "PowerPoint Files (*.ppt;*.pptx)|*.ppt;*.pptx";
                     folderFilefilter = "*.pptx";
-                    MergeStatus = "Merging PowerPoint files...";
+                    MergeStatus = "PowerPoint files...";
                     break;
                 case FileType.PDF:
                     repo = new PDFMergeRepo();
                     fileFilter = "PDF Files (*.pdf)|*.pdf";
                     folderFilefilter = "*.pdf";
-                    MergeStatus = "Merging PDF files...";
+                    MergeStatus = "PDF files...";
                     break;
                 case FileType.Excel:
                     repo = new ExcelMergeRepo();
                     fileFilter = "Excel Files (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv";
                     folderFilefilter = "*.xlsx";
-                    MergeStatus = "Merging Excel files...";
+                    MergeStatus = "Excel files...";
                     break;
                 case FileType.Word:
                     repo = new WORDMergeRepo();
                     fileFilter = "Word Files (*.docx;*.doc)|*.docx;*.doc";
                     folderFilefilter = "*.docx";
-                    MergeStatus = "Merging Word files...";
+                    MergeStatus = "Word files...";
                     break;
             }
 
@@ -257,7 +298,7 @@ namespace PPTMerger
         /// <summary>
         /// Function to call MergePowerPointFiles() function
         /// </summary>
-        private void MergeFiles(object obj)
+        private async void MergeFiles(object obj)
         {
             if (SelectedFiles.Count == 0)
             {
@@ -277,13 +318,23 @@ namespace PPTMerger
             {
                 try
                 {
+                    IsMerging = true;
+                    ProgressValue = 0;
+                    ProgressStatus = "Starting merge...";
+
                     //Call MergePowerPointFiles() function 
-                    repo.MergeFiles(selectedFiles, saveFileDialog.FileName);
+                    await repo.MergeFilesAsync(selectedFiles, saveFileDialog.FileName);
+                    ProgressStatus = "Merge completed successfully!";
                     System.Windows.MessageBox.Show($"Powerpoint presentations merged successfully.");
                 }
                 catch (Exception ex)
                 {
+                    ProgressStatus = $"Merge failed: {ex.Message}";
                     System.Windows.MessageBox.Show($"{ex.Message}");
+                }
+                finally
+                {
+                    IsMerging = false;
                 }
             }
         }
