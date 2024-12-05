@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PPTMerger"
         mc:Ignorable="d"
         Title="FileMerger" Height="450" Width="800" FontWeight="SemiBold" WindowState="Maximized">
-    <Grid Margin="10" MaxWidth="1400">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -43,18 +43,18 @@
                     <StackPanel Orientation="Horizontal">
                         <RadioButton x:Name="radioSelectFolder" IsChecked="{Binding IsFolderSelection}"  Content="Select Folder" VerticalAlignment="Center" Margin="5,0"/>
                         <RadioButton x:Name="radioSelectFile" IsChecked="{Binding IsFileSelection}" Content="Select File" VerticalAlignment="Center" Margin="5,0"/>
-                        <Button Content="Browse" Command="{Binding SelectFilesCommand}"/>
+                        <Button Content="Browse" Command="{Binding SelectFilesCommand}" Width="80" Background="Transparent"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical">
-                        <Button Content="Clear all" Command="{Binding ClearAllCommand}" Width="50" HorizontalAlignment="Right"/>
+                        <Button Content="Clear all" Command="{Binding ClearAllCommand}" Width="80" Background="Transparent" HorizontalAlignment="Right"/>
                         <ListBox x:Name="myListBox" Height="200" ItemsSource="{Binding SelectedFiles}"
          AllowDrop="True"
          PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"
          Drop="ListBox_Drop">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Width="1300">
+                                    <Grid Width="1000">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
@@ -77,8 +77,7 @@
                 </GroupBox>
             </StackPanel>
         </Border>
-        <!-- Status Bar -->
-        <StatusBar Grid.Row="1" Background="DarkBlue">
+        <StatusBar Background="DarkBlue" Grid.Row="1">
             <StatusBar.Items>
                 <StatusBarItem>
                     <TextBlock Text="Ready" Foreground="White"/>

@@ -21,7 +21,7 @@ namespace PPTMerger.MergeRepo
         {  
             
             Microsoft.Office.Interop.PowerPoint.Application pptApplication = new Microsoft.Office.Interop.PowerPoint.Application();
-            Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoTrue);
+            Presentation mergedPresentation = pptApplication.Presentations.Add(MsoTriState.msoFalse);
             try
             {
                 OnLog($"Starting merge operation with {pptPaths.Count} files.");
