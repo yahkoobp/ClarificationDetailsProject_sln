@@ -5,7 +5,6 @@
 // Author: Yahkoob P
 // Date: 11-12-2024
 // ----------------------------------------------------------------------------------------
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,14 +18,18 @@ namespace PPTMerger
     /// </summary>
     public partial class MainWindow : Window
     {
-        private object _draggedItem;
+        private object _draggedItem = new object();
         public MainWindow()
         {
             InitializeComponent();
             //set the data context for main window
             this.DataContext = new MainViewModel();
         }
-
+        /// <summary>
+        /// To handle previewMouseLeftButtonDown event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var source = e.OriginalSource as DependencyObject;
@@ -42,7 +45,6 @@ namespace PPTMerger
 
                 source = VisualTreeHelper.GetParent(source);
             }
-           // e.Handled = false;
             var listBox = sender as ListBox;
             if (listBox != null)
             {
@@ -58,6 +60,11 @@ namespace PPTMerger
             }
         }
 
+        /// <summary>
+        /// To handle ListBox drop event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
             var source = e.OriginalSource as DependencyObject;
@@ -97,6 +104,12 @@ namespace PPTMerger
             }
         }
 
+        /// <summary>
+        /// method to get the listbox item under the mouse
+        /// </summary>
+        /// <param name="listBox"></param>
+        /// <param name="position"></param>
+        /// <returns></returns>
         private object GetListBoxItemUnderMouse(ListBox listBox, Point position)
         { 
 

@@ -20,6 +20,8 @@ using System.IO;
 using System.Windows.Forms;
 using PPTMerger.Enums;
 using System.Windows.Threading;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PPTMerger
 {
@@ -33,21 +35,33 @@ namespace PPTMerger
     /// </remarks>
     public class MainViewModel : ViewModelBase
     {
-        //For storing paths for presentations
-        private FileType selectedFileType;
-        private string fileFilter;
-        private string folderFilefilter;
-        private bool isFolderSelection;
-        private bool isFileSelection;
-        private string selectedPath;
-        private string mergeStatus;
-        private ObservableCollection<string> selectedFiles;
-        private ObservableCollection<string> logEntries;
-        private IRepo repo;
-        private int progressValue;
-        private bool isMerging;
-        private string progressStatus;
+        #region Constants
+        private const string PPTFilter = "PowerPoint Files (*.ppt;*.pptx)|*.ppt;*.pptx";
+        private const string PPTMergeStatus = "PowerPoint files...";
+        private const string PDFFilter = "PDF Files (*.pdf)|*.pdf";
+        private const string PDFMergeStatus = "PDF files...";
+        private const string ExcelFilter = "Excel Files (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv";
+        private const string ExcelMergeStatus = "Excel files...";
+        private const string WordFilter = "Word Files (*.docx;*.doc)|*.docx;*.doc";
+        private const string WordMergeStatus = "Word files...";
+        #endregion
 
+        #region Members
+        private FileType selectedFileType = FileType.PowerPoint;
+        private string fileFilter = string.Empty;
+        private List<string> folderFilefilters = null;
+        private bool isFolderSelection = false;
+        private string selectedPath = string.Empty;
+        private string mergeStatus = string.Empty;
+        private ObservableCollection<string> selectedFiles = null;
+        private ObservableCollection<string> logEntries = null;
+        private IRepo repo = null;
+        private int progressValue = 0;
+        private bool isMerging = false;
+        private string progressStatus = string.Empty;
+        #endregion
+
+        #region Constructor
         public MainViewModel()
         {           
             selectedFiles = new ObservableCollection<string>();
@@ -58,10 +72,6 @@ namespace PPTMerger
             MergeCommand = new RelayCommand(MergeFiles);
             ClearAllCommand = new RelayCommand(ClearAllFiles);
             repo = new PPTMergeRepo();
-            repo.FileProcessingFailed += (sender, e) =>
-            {
-                MessageBox.Show($"Error processing file '{e.FilePath}': {e.ErrorMessage}");
-            };
             Dispatcher = Dispatcher.CurrentDispatcher;
 
             repo.LogEvent += (string message) =>
@@ -73,9 +83,17 @@ namespace PPTMerger
                 Dispatcher.Invoke(() => ProgressValue = progress);
             };
         }
+        #endregion
 
+        #region Properties
+        /// <summary>
+        /// For updating the UI from the background thread
+        /// </summary>
         public Dispatcher Dispatcher { get; }
 
+        /// <summary>
+        /// Get or sets selected file type
+        /// </summary>
         public FileType SelectedFileType
         {
             get => selectedFileType;
@@ -87,7 +105,9 @@ namespace PPTMerger
             }
         }
 
-        //Observable collection for storing selected file names
+        /// <summary>
+        /// Observable collection for storing selected file names
+        /// </summary>
         public ObservableCollection<string> SelectedFiles
         {
             get
@@ -101,6 +121,9 @@ namespace PPTMerger
             }
         }
 
+        /// <summary>
+        /// Collection to store log entries
+        /// </summary>
         public ObservableCollection<string> LogEntries
         {
             get
@@ -113,7 +136,9 @@ namespace PPTMerger
                 OnPropertyChanged(nameof(LogEntries));
             }
         }
-
+        /// <summary>
+        /// To check wheather selected mode is folder
+        /// </summary>
         public bool IsFolderSelection
         {
             get => isFolderSelection;
@@ -124,6 +149,9 @@ namespace PPTMerger
             }
         }
 
+        /// <summary>
+        /// To check wheather selected mode is file
+        /// </summary>
         public bool IsFileSelection
         {
             get => !isFolderSelection;
@@ -133,7 +161,9 @@ namespace PPTMerger
                 OnPropertyChanged(nameof(IsFolderSelection));
             }
         }
-
+        /// <summary>
+        /// Gets or sets the selected path
+        /// </summary>
         public string SelectedPath
         {
             get => selectedPath;
@@ -144,11 +174,18 @@ namespace PPTMerger
             }
         }
 
+        //Command for merging presentations
+        public ICommand MergeCommand { get; }
         //Command for selecting files
         public ICommand SelectFilesCommand { get; }
+        //Command for Remove an item from the selected files
         public ICommand RemoveItemCommand { get; }
-
+        //Command for clearing selected files
         public ICommand ClearAllCommand { get; }
+
+        /// <summary>
+        /// Sets or gets the merge status
+        /// </summary>
         public string MergeStatus {
             get
             {
@@ -161,6 +198,9 @@ namespace PPTMerger
             }
         }
 
+        /// <summary>
+        /// Gets or sets the progress value
+        /// </summary>
         public int ProgressValue
         {
             get => progressValue;
@@ -169,7 +209,11 @@ namespace PPTMerger
                 progressValue = value;
                 OnPropertyChanged(nameof(ProgressValue));
             }
-        }      
+        }
+
+        /// <summary>
+        /// To check wheather merging is on going or not
+        /// </summary>
         public bool IsMerging
         {
             get => isMerging;
@@ -179,7 +223,9 @@ namespace PPTMerger
                 OnPropertyChanged(nameof(IsMerging));
             }
         }
-
+        /// <summary>
+        /// Gets or sets the progress status
+        /// </summary>
         public string ProgressStatus
         {
             get => progressStatus;
@@ -189,10 +235,13 @@ namespace PPTMerger
                 OnPropertyChanged(nameof(ProgressStatus));
             }
         }
+        #endregion
 
-        //Command for merging presentations
-        public ICommand MergeCommand { get; }
-
+        #region Methods
+        /// <summary>
+        /// Method for updating logic for selected file type
+        /// </summary>
+        /// <param name="fileType"></param>
         private void UpdateFileTypeLogic(FileType fileType)
         {
             // Update logic or state based on the selected file type
@@ -200,27 +249,33 @@ namespace PPTMerger
             {
                 case FileType.PowerPoint:
                     repo = new PPTMergeRepo();
-                    fileFilter = "PowerPoint Files (*.ppt;*.pptx)|*.ppt;*.pptx";
-                    folderFilefilter = "*.pptx";
-                    MergeStatus = "PowerPoint files...";
-                    break;
+                    fileFilter = PPTFilter;
+                    folderFilefilters = new List<string> { "*.ppt", "*pptx", "*ppsx" };
+                    MergeStatus = PPTMergeStatus;
+                    break; 
                 case FileType.PDF:
                     repo = new PDFMergeRepo();
-                    fileFilter = "PDF Files (*.pdf)|*.pdf";
-                    folderFilefilter = "*.pdf";
-                    MergeStatus = "PDF files...";
+                    fileFilter = PDFFilter;
+                    folderFilefilters = new List<string> { "*.pdf"};
+                    MergeStatus = PDFMergeStatus;
                     break;
                 case FileType.Excel:
                     repo = new ExcelMergeRepo();
-                    fileFilter = "Excel Files (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv";
-                    folderFilefilter = "*.xlsx";
-                    MergeStatus = "Excel files...";
+                    fileFilter = ExcelFilter;
+                    folderFilefilters = new List<string> { "*.xlsx"};
+                    MergeStatus = ExcelMergeStatus;
                     break;
                 case FileType.Word:
                     repo = new WORDMergeRepo();
-                    fileFilter = "Word Files (*.docx;*.doc)|*.docx;*.doc";
-                    folderFilefilter = "*.docx";
-                    MergeStatus = "Word files...";
+                    fileFilter = WordFilter;
+                    folderFilefilters = new List<string> { "*.docx" };
+                    MergeStatus = WordMergeStatus;
+                    break;
+                default:
+                    repo = null;
+                    fileFilter = null;
+                    folderFilefilters = null;
+                    MergeStatus = null;
                     break;
             }
 
@@ -228,9 +283,8 @@ namespace PPTMerger
         }
 
         /// <summary>
-        /// Function to select multiple presentations
+        /// Method to select multiple presentations
         /// </summary>
-        /// 
         private void SelectFiles(object obj)
         {
             if (IsFolderSelection)
@@ -241,6 +295,10 @@ namespace PPTMerger
                     {
                         SelectedPath = folderDialog.SelectedPath;
                         LoadPresentationsFromFolder(folderDialog.SelectedPath);
+                    }
+                    else
+                    {
+                        //ResetMembers();
                     }
                 }
             }
@@ -257,13 +315,21 @@ namespace PPTMerger
                     SelectedPath = string.Join("; ", fileDialog.FileNames);
                     LoadPresentationsFromFiles(fileDialog.FileNames);
                 }
+                else
+                {
+                    //ResetMembers();
+                }
             }
         }
 
+        /// <summary>
+        /// Method to load presentations from folder
+        /// </summary>
+        /// <param name="folderPath"></param>
         private void LoadPresentationsFromFolder(string folderPath)
         {
             selectedFiles.Clear();
-            var Files = Directory.GetFiles(folderPath, folderFilefilter, SearchOption.TopDirectoryOnly);
+            var Files = folderFilefilters.SelectMany(ext => Directory.GetFiles(folderPath, ext, SearchOption.TopDirectoryOnly));
             foreach (var file in Files)
             {
                 selectedFiles.Add(file);
@@ -271,6 +337,10 @@ namespace PPTMerger
 
         }
 
+        /// <summary>
+        /// Method to load presentations from file
+        /// </summary>
+        /// <param name="files"></param>
         private void LoadPresentationsFromFiles(string[] files)
         {
             selectedFiles.Clear();
@@ -280,6 +350,10 @@ namespace PPTMerger
             }
         }
 
+        /// <summary>
+        /// Method to remove a file
+        /// </summary>
+        /// <param name="file"></param>
         private void RemoveFile(object file)
         {
             if (selectedFiles.Contains((string)file))
@@ -288,15 +362,17 @@ namespace PPTMerger
             }
         }
 
+        /// <summary>
+        /// Method to clear all files
+        /// </summary>
+        /// <param name="obj"></param>
         private void ClearAllFiles(object obj)
         {
             SelectedFiles.Clear();
         }
 
-
-
         /// <summary>
-        /// Function to call MergePowerPointFiles() function
+        /// Method to call MergePowerPointFiles() function
         /// </summary>
         private async void MergeFiles(object obj)
         {
@@ -320,7 +396,8 @@ namespace PPTMerger
                 {
                     IsMerging = true;
                     ProgressValue = 0;
-                    ProgressStatus = "Starting merge...";
+                    ProgressStatus = "Merging...";
+                    logEntries.Clear();
 
                     //Call MergePowerPointFiles() function 
                     await repo.MergeFilesAsync(selectedFiles, saveFileDialog.FileName);
@@ -337,6 +414,24 @@ namespace PPTMerger
                     IsMerging = false;
                 }
             }
+            else
+            {
+                //ResetMembers();
+            }
         }
+
+        private void ResetMembers()
+        {
+            SelectedFileType = FileType.PowerPoint;
+            IsFolderSelection = false;
+            SelectedPath = string.Empty;
+            MergeStatus = string.Empty;
+            SelectedFiles = new ObservableCollection<string>();
+            LogEntries = new ObservableCollection<string>();
+            ProgressValue = 0;
+            isMerging = false;
+            progressStatus = string.Empty;
+        }
+        #endregion
     }
 }

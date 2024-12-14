@@ -10,10 +10,8 @@ namespace PPTMerger.Repo
 {
     internal interface IRepo
     {
-        event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
         event Action<string> LogEvent;
         event EventHandler<int> ProgressEvent;
         Task MergeFilesAsync(ObservableCollection<string> filePaths, string outputPath);
-
     }
 }

@@ -1,26 +1,53 @@
-﻿using System;
+﻿// ----------------------------------------------------------------------------------------
+// Project Name: PPTMerger
+// File Name: PPTMergeRepo.cs
+// Description: This file contains the implementation of the PPTVMergeRepo class,
+// Author: Yahkoob P
+// Date: 11-12-2024
+// ----------------------------------------------------------------------------------------
+
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.PowerPoint;
-using PPTMerger.Delegates;
 using PPTMerger.Repo;
 
 namespace PPTMerger.MergeRepo
 {
+    /// <summary>
+    /// Represents the MergeRepo class for merging presentations
+    /// </summary>
     internal class PPTMergeRepo : IRepo
     {
-        public event EventHandler<FileProcessingFailedEventArgs> FileProcessingFailed;
+        /// <summary>
+        /// Event for logger
+        /// </summary>
         public event Action<string> LogEvent;
+        /// <summary>
+        /// Event for tracking merge progress
+        /// </summary>
         public event EventHandler<int> ProgressEvent;
+
+        /// <summary>
+        /// Method to invoke log event
+        /// </summary>
+        /// <param name="message"></param>
         protected void OnLog(string message)
         {
             LogEvent?.Invoke($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
         }
+        /// <summary>
+        /// Method to merge presentations
+        /// </summary>
+        /// <param name="pptPaths"></param>
+        /// <param name="outputPath"></param>
+        /// <returns></returns>
         public async Task MergeFilesAsync(ObservableCollection<string> pptPaths, string outputPath)
         {
+            //Run the merge task
             await Task.Run(() =>
             {
                 int totalFiles = pptPaths.Count;
@@ -44,7 +71,7 @@ namespace PPTMerger.MergeRepo
                             currentFile++;
                             if (!IsPowerpointFile(pptPath))
                             {
-                                OnLog($"{pptPath} is not a valid PowerPoint file.");
+                                OnLog($"{pptPath} is not a valid PowerPoint file. skipping");
                                 skippedCount++;
                                 continue;
                             }
@@ -53,7 +80,7 @@ namespace PPTMerger.MergeRepo
                             Presentation sourcePresentation = pptApplication.Presentations.Open(
                                 pptPath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
 
-                            OnLog($"Processing file: {pptPath}");
+                            OnLog($"Processing file {currentFile} of {totalFiles}: {pptPath}");
 
                             // Process each slide in the presentation
                             foreach (Slide slide in sourcePresentation.Slides)
@@ -63,6 +90,7 @@ namespace PPTMerger.MergeRepo
                                     slide.Copy();
                                     Slide newSlide = mergedPresentation.Slides.Paste(mergedPresentation.Slides.Count + 1)[1];
                                     newSlide.Design = slide.Design;
+                                    
                                 }
                                 catch
                                 {
@@ -80,7 +108,6 @@ namespace PPTMerger.MergeRepo
                             skippedCount++;
                         }
                         int progress = (currentFile * 100) / totalFiles;
-                        OnLog($"Processing file {currentFile} of {totalFiles}...");
                         ProgressEvent?.Invoke(this, progress);
                     }
 
@@ -113,9 +140,11 @@ namespace PPTMerger.MergeRepo
                 }
             });
         }
-
-
-
+        /// <summary>
+        /// Method to check wheather the file is a valid presentation or not
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <returns></returns>
         public bool IsPowerpointFile(string filepath)
         {
             string extension = Path.GetExtension(filepath)?.ToLower();
