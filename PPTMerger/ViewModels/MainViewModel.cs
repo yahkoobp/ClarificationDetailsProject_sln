@@ -59,11 +59,12 @@ namespace PPTMerger
         private int progressValue = 0;
         private bool isMerging = false;
         private string progressStatus = string.Empty;
+        private bool isMergeButtonEnable = true;
         #endregion
 
         #region Constructor
         public MainViewModel()
-        {           
+        {
             selectedFiles = new ObservableCollection<string>();
             LogEntries = new ObservableCollection<string>();
             SelectedFileType = FileType.PowerPoint;
@@ -171,6 +172,19 @@ namespace PPTMerger
             {
                 selectedPath = value;
                 OnPropertyChanged(nameof(IsFolderSelection));
+            }
+        }
+
+        public bool IsMergeButtonEnable
+        {
+            get
+            {
+                return isMergeButtonEnable;
+            }
+            set
+            {
+                isMergeButtonEnable = value;
+                OnPropertyChanged(nameof(IsMergeButtonEnable));
             }
         }
 
@@ -328,6 +342,10 @@ namespace PPTMerger
         /// <param name="folderPath"></param>
         private void LoadPresentationsFromFolder(string folderPath)
         {
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                return;
+            }
             selectedFiles.Clear();
             var Files = folderFilefilters.SelectMany(ext => Directory.GetFiles(folderPath, ext, SearchOption.TopDirectoryOnly));
             foreach (var file in Files)
@@ -395,6 +413,7 @@ namespace PPTMerger
                 try
                 {
                     IsMerging = true;
+                    IsMergeButtonEnable = false;
                     ProgressValue = 0;
                     ProgressStatus = "Merging...";
                     logEntries.Clear();
@@ -411,6 +430,7 @@ namespace PPTMerger
                 }
                 finally
                 {
+                    IsMergeButtonEnable = true;
                     IsMerging = false;
                 }
             }
